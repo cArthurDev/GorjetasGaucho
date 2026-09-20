@@ -1254,6 +1254,8 @@ function renderRoulette() {
 
   if (!list) return;
 
+  renderRouletteWheel();
+
 
   list.innerHTML =
     state.members.length
@@ -1289,6 +1291,52 @@ function renderRoulette() {
         </div>
 
       `;
+
+}
+
+
+function renderRouletteWheel() {
+
+  const wheel = $('#roulette-wheel');
+
+  if (!wheel) return;
+
+  const total = state.members.length;
+
+  wheel.querySelectorAll('.roulette-wheel-label').forEach(
+    (label) => label.remove()
+  );
+
+  if (!total) {
+    wheel.style.background = 'repeating-conic-gradient(#c69229 0deg 1deg, #292117 1deg 30deg)';
+    return;
+  }
+
+  const colors = ['#bd7f23', '#5b8d70', '#965346', '#497a91', '#785a9d', '#b89137'];
+  const slice = 360 / total;
+  const segments = state.members.map((member, index) => {
+    const start = (index * slice).toFixed(3);
+    const end = ((index + 1) * slice).toFixed(3);
+    return `${colors[index % colors.length]} ${start}deg ${end}deg`;
+  });
+
+  wheel.style.background = `conic-gradient(${segments.join(',')})`;
+
+  state.members.forEach((member, index) => {
+
+    const label = document.createElement('span');
+    const angle = (index * slice) + (slice / 2) - 90;
+    const fontSize = total > 18 ? 7 : total > 12 ? 8 : 9;
+
+    label.className = 'roulette-wheel-label';
+    label.textContent = member.full_name;
+    label.title = member.full_name;
+    label.style.fontSize = `${fontSize}px`;
+    label.style.transform = `rotate(${angle}deg) translateX(38px)`;
+
+    wheel.insertBefore(label, wheel.firstElementChild);
+
+  });
 
 }
 
@@ -3172,69 +3220,63 @@ async function spinRoulette() {
 
 
   let chosen =
-    null;
+    state.members[
+      Math.floor(
+        Math.random() * state.members.length
+      )
+    ];
+
+  const wheel = $('#roulette-wheel');
 
 
   try {
 
-    for (
-      let index = 0;
-      index < 14;
-      index += 1
-    ) {
+    if (wheel) {
 
-      chosen =
-        state.members[
-          Math.floor(
-            Math.random() *
-            state.members.length
-          )
-        ];
-
-
-      result.innerHTML = `
-
-        <span>
-          ${escapeHtml(
-            initials(
-              chosen.full_name
-            )
-          )}
-        </span>
-
-        <strong>
-          ${escapeHtml(
-            chosen.full_name
-          )}
-        </strong>
-
-        <small>
-          Sorteando...
-        </small>
-
-      `;
-
-
-      await sleep(
-        80 +
-        index * 14
+      const winnerIndex = state.members.findIndex(
+        (member) => member.id === chosen.id
       );
+      const slice = 360 / state.members.length;
+      const landingAngle =
+        (360 - ((winnerIndex + .5) * slice)) % 360;
+
+      wheel.classList.remove('spinning');
+      wheel.style.transition = 'none';
+      wheel.style.transform = 'rotate(0deg)';
+      void wheel.offsetWidth;
+
+      wheel.style.removeProperty('transform');
+      wheel.style.removeProperty('transition');
+      wheel.style.setProperty(
+        '--wheel-rotation',
+        `${(360 * 7) + landingAngle}deg`
+      );
+
+      wheel.classList.add('spinning');
 
     }
 
+    result.innerHTML = `
 
-    const small =
-      result.querySelector(
-        'small'
-      );
+      <span>✦</span>
 
+      <strong>Roleta girando...</strong>
 
-    if (small) {
+      <small>O resultado será definido pelo ponteiro.</small>
 
-      small.textContent =
-        'Ganhador da rodada';
+    `;
 
-    }
+    await sleep(4200);
+
+    result.innerHTML = `
+
+      <span>${escapeHtml(initials(chosen.full_name))}</span>
+
+      <strong>${escapeHtml(chosen.full_name)}</strong>
+
+      <small>Ganhador da rodada</small>
+
+    `;
 
 
     if (chosen) {

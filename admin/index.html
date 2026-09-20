@@ -707,25 +707,15 @@
     class="login-screen"
   >
 
+    <div class="login-orb login-orb-one" aria-hidden="true"></div>
+    <div class="login-orb login-orb-two" aria-hidden="true"></div>
+    <div class="login-grid" aria-hidden="true"></div>
+
     <div class="login-box">
 
       <div class="brand-mark">
-        <span class="brand-dot"></span>
-        GORJETAS DO GAÚCHO
+        <img src="../images/logo.png" alt="Gorjetas do Gaúcho" />
       </div>
-
-      <p class="eyebrow gold">
-        Área restrita
-      </p>
-
-      <h1>
-        Painel<br />
-        do Gaúcho.
-      </h1>
-
-      <p>
-        Entre para acompanhar membros e gorjetas.
-      </p>
 
       <form id="login-form">
 
@@ -874,6 +864,12 @@
         <button class="nav-item" data-tab="battle" type="button">
           <span class="nav-icon">⚔</span>
           Battle Royale
+          <b>↗</b>
+        </button>
+
+        <button class="nav-item" data-tab="cash" type="button">
+          <span class="nav-icon">✹</span>
+          Cash Gaúcho
           <b>↗</b>
         </button>
 
@@ -1065,6 +1061,12 @@
         </div>
       </section>
 
+      <section id="cash-tab" class="tab-content">
+        <div class="plinko-container">
+          <iframe src="../cash_gaucho.html" title="Cash Gaúcho" class="plinko-frame" allow="fullscreen"></iframe>
+        </div>
+      </section>
+
 
       <!-- =================================================
            ROLETA
@@ -1098,6 +1100,12 @@
             ✦ SORTEIO DA COMUNIDADE
           </div>
 
+          <div class="roulette-stage" aria-label="Roleta de participantes">
+            <span class="roulette-pointer" aria-hidden="true"></span>
+            <div id="roulette-wheel" class="roulette-wheel">
+              <div class="roulette-wheel-core">✦</div>
+            </div>
+          </div>
 
           <div
             id="roulette-result"
