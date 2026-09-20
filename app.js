@@ -7,12 +7,16 @@ import {
   ADMIN_PASSWORD
 } from './config.js';
 
+
 const supabase = createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
 
-const isAdmin = window.location.pathname.includes('/admin');
+
+const isAdmin =
+  window.location.pathname.includes('/admin');
+
 
 const state = {
   members: [],
@@ -20,7 +24,10 @@ const state = {
   filter: ''
 };
 
-const $ = (selector) => document.querySelector(selector);
+
+const $ = (selector) =>
+  document.querySelector(selector);
+
 
 const escapeHtml = (value = '') =>
   String(value).replace(
@@ -35,6 +42,7 @@ const escapeHtml = (value = '') =>
       })[char]
   );
 
+
 const initials = (name = '') =>
   name
     .trim()
@@ -44,11 +52,13 @@ const initials = (name = '') =>
     .join('')
     .toUpperCase();
 
+
 const feedback = (
   element,
   message,
   type = ''
 ) => {
+
   if (!element) return;
 
   element.textContent = message;
@@ -58,25 +68,29 @@ const feedback = (
 
 /* =========================================================
    MÁSCARA DE TELEFONE
-   Exibe: (64) 99999-9999
-   Salva no banco: 64999999999
 ========================================================= */
 
 function setupPhoneMask() {
+
   const phoneInput = $('#phone');
 
   if (!phoneInput) return;
 
   phoneInput.addEventListener('input', (event) => {
-    let value = event.target.value.replace(/\D/g, '');
+
+    let value =
+      event.target.value.replace(/\D/g, '');
 
     value = value.slice(0, 11);
 
     if (value.length > 0) {
-      value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+
+      value =
+        `(${value.slice(0, 2)}) ${value.slice(2)}`;
     }
 
     if (value.length > 10) {
+
       value =
         value.slice(0, 10) +
         '-' +
@@ -86,31 +100,39 @@ function setupPhoneMask() {
     event.target.value = value;
   });
 
+
   phoneInput.addEventListener('blur', (event) => {
-    let value = event.target.value.replace(/\D/g, '');
+
+    let value =
+      event.target.value.replace(/\D/g, '');
 
     if (value.length > 11) {
       value = value.slice(0, 11);
     }
 
     if (value.length === 11) {
+
       event.target.value =
         `(${value.slice(0, 2)}) ` +
         `${value.slice(2, 7)}-` +
         `${value.slice(7)}`;
     }
+
   });
 }
 
 
 /* =========================================================
    TELEFONE NO PAINEL
-   Exibe: (64) 99999-****
-   Botão permite mostrar/ocultar
 ========================================================= */
 
-function formatPhone(phone, visible = false) {
-  const digits = String(phone || '').replace(/\D/g, '');
+function formatPhone(
+  phone,
+  visible = false
+) {
+
+  const digits =
+    String(phone || '').replace(/\D/g, '');
 
   if (digits.length !== 11) {
     return digits;
@@ -127,43 +149,67 @@ function formatPhone(phone, visible = false) {
 
 
 function setupPhoneVisibility() {
-  document.querySelectorAll('.phone-toggle').forEach((button) => {
-    button.addEventListener('click', () => {
-      const container = button.closest('.phone-protected');
-      const phoneElement =
-        container?.querySelector('.member-phone');
 
-      if (!phoneElement) return;
+  document
+    .querySelectorAll('.phone-toggle')
+    .forEach((button) => {
 
-      const phone = phoneElement.dataset.phone || '';
+      button.addEventListener(
+        'click',
+        () => {
 
-      const isVisible =
-        phoneElement.dataset.visible === 'true';
+          const container =
+            button.closest(
+              '.phone-protected'
+            );
 
-      const nextVisible = !isVisible;
+          const phoneElement =
+            container?.querySelector(
+              '.member-phone'
+            );
 
-      phoneElement.dataset.visible =
-        String(nextVisible);
+          if (!phoneElement) return;
 
-      phoneElement.textContent =
-        formatPhone(phone, nextVisible);
+          const phone =
+            phoneElement.dataset.phone || '';
 
-      button.textContent =
-        nextVisible ? '🙈' : '👁';
+          const isVisible =
+            phoneElement.dataset.visible ===
+            'true';
 
-      button.title =
-        nextVisible
-          ? 'Ocultar telefone'
-          : 'Mostrar telefone';
+          const nextVisible =
+            !isVisible;
 
-      button.setAttribute(
-        'aria-label',
-        nextVisible
-          ? 'Ocultar telefone'
-          : 'Mostrar telefone'
+          phoneElement.dataset.visible =
+            String(nextVisible);
+
+          phoneElement.textContent =
+            formatPhone(
+              phone,
+              nextVisible
+            );
+
+          button.textContent =
+            nextVisible
+              ? '🙈'
+              : '👁';
+
+          button.title =
+            nextVisible
+              ? 'Ocultar telefone'
+              : 'Mostrar telefone';
+
+          button.setAttribute(
+            'aria-label',
+            nextVisible
+              ? 'Ocultar telefone'
+              : 'Mostrar telefone'
+          );
+
+        }
       );
+
     });
-  });
 }
 
 
@@ -172,9 +218,13 @@ function setupPhoneVisibility() {
 ========================================================= */
 
 if (isAdmin) {
+
   initAdmin();
+
 } else {
+
   initMembers();
+
 }
 
 
@@ -183,258 +233,396 @@ if (isAdmin) {
 ========================================================= */
 
 function initMembers() {
-  const form = $('#member-form');
+
+  const form =
+    $('#member-form');
 
   if (!form) return;
 
   setupPhoneMask();
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+  form.addEventListener(
+    'submit',
+    async (event) => {
 
-    const button = form.querySelector('button');
-    const original =
-      button?.innerHTML || 'Enviar';
+      event.preventDefault();
 
-    if (button) {
-      button.disabled = true;
-      button.innerHTML = 'Enviando...';
-    }
+      const button =
+        form.querySelector('button');
 
-    try {
-      const values = Object.fromEntries(
-        new FormData(form).entries()
-      );
+      const original =
+        button?.innerHTML ||
+        'Enviar';
 
-      const phone = String(
-        values.phone || ''
-      ).replace(/\D/g, '');
+      if (button) {
 
-      const member = {
-        full_name: String(
-          values.full_name || ''
-        ).trim(),
-
-        phone: phone,
-
-        twitch_nick: String(
-          values.twitch_nick || ''
-        ).trim()
-      };
-
-      console.log(
-        'Enviando membro:',
-        member
-      );
-
-      /* =========================
-         VALIDAÇÃO DO NOME
-      ========================= */
-
-      if (
-        member.full_name.length < 2 ||
-        member.full_name.length > 120
-      ) {
-        throw new Error(
-          'O nome deve ter entre 2 e 120 caracteres.'
-        );
+        button.disabled = true;
+        button.innerHTML =
+          'Enviando...';
       }
 
-      /* =========================
-         VALIDAÇÃO DO TELEFONE
-      ========================= */
+      try {
 
-      if (!/^\d{11}$/.test(member.phone)) {
-        throw new Error(
-          'O telefone deve conter exatamente 11 números.'
-        );
-      }
-
-      /* =========================
-         VALIDAÇÃO DO TWITCH
-      ========================= */
-
-      if (
-        member.twitch_nick.length < 2 ||
-        member.twitch_nick.length > 50
-      ) {
-        throw new Error(
-          'O nick da Twitch deve ter entre 2 e 50 caracteres.'
-        );
-      }
-
-      /* =========================
-         VERIFICAR DUPLICADOS
-      ========================= */
-
-      const normalizedNick =
-        member.twitch_nick
-          .trim()
-          .toLowerCase();
-
-      const { data: existingMembers, error: checkError } =
-        await supabase
-          .from('members')
-          .select('id, phone, twitch_nick')
-          .or(
-            `phone.eq.${member.phone},twitch_nick.ilike.${normalizedNick}`
+        const values =
+          Object.fromEntries(
+            new FormData(form).entries()
           );
 
-      if (checkError) {
-        console.error(
-          'Erro ao verificar cadastro:',
-          checkError
-        );
 
-        throw new Error(
-          'Não foi possível verificar seus dados. Tente novamente.'
-        );
-      }
+        const phone =
+          String(
+            values.phone || ''
+          ).replace(/\D/g, '');
 
-      /* =========================
-         VERIFICAR TELEFONE
-      ========================= */
 
-      const phoneExists =
-        existingMembers?.some(
-          item =>
-            String(item.phone || '') ===
-            member.phone
-        );
+        const member = {
 
-      if (phoneExists) {
-        throw new Error(
-          'Este número de telefone já possui um cadastro.'
-        );
-      }
+          full_name:
+            String(
+              values.full_name || ''
+            ).trim(),
 
-      /* =========================
-         VERIFICAR TWITCH
-      ========================= */
+          phone: phone,
 
-      const twitchExists =
-        existingMembers?.some(
-          item =>
-            String(item.twitch_nick || '')
-              .trim()
-              .toLowerCase() ===
-            normalizedNick
-        );
+          twitch_nick:
+            String(
+              values.twitch_nick || ''
+            ).trim()
 
-      if (twitchExists) {
-        throw new Error(
-          'Este nick da Twitch já possui um cadastro.'
-        );
-      }
+        };
 
-      /* =========================
-         ENVIO PARA SUPABASE
-      ========================= */
 
-      const { data, error } =
-        await supabase
-          .from('members')
-          .insert(member)
-          .select()
-          .single();
+        /* =========================
+           VALIDAÇÃO DO NOME
+        ========================= */
 
-      console.log(
-        'Resposta Supabase:',
-        {
-          data,
-          error
-        }
-      );
-
-      /* =========================
-         TRATAMENTO DE ERRO
-      ========================= */
-
-      if (error) {
-        console.error(
-          'Erro ao cadastrar membro:',
-          error
-        );
-
-        /*
-         * 23505 = violação de UNIQUE
-         * Isso protege contra duas pessoas
-         * cadastrando o mesmo dado ao mesmo tempo.
-         */
-
-        if (error.code === '23505') {
-
-          if (
-            error.message
-              ?.toLowerCase()
-              .includes('phone')
-          ) {
-            throw new Error(
-              'Este número de telefone já possui um cadastro.'
-            );
-          }
-
-          if (
-            error.message
-              ?.toLowerCase()
-              .includes('twitch')
-          ) {
-            throw new Error(
-              'Este nick da Twitch já possui um cadastro.'
-            );
-          }
+        if (
+          member.full_name.length < 2 ||
+          member.full_name.length > 120
+        ) {
 
           throw new Error(
-            'Este telefone ou nick da Twitch já está cadastrado.'
+            'O nome deve ter entre 2 e 120 caracteres.'
           );
         }
 
-        throw new Error(
-          error.message ||
-          'Não foi possível cadastrar o membro.'
+
+        /* =========================
+           VALIDAÇÃO DO TELEFONE
+        ========================= */
+
+        if (
+          !/^\d{11}$/.test(
+            member.phone
+          )
+        ) {
+
+          throw new Error(
+            'O telefone deve conter exatamente 11 números.'
+          );
+        }
+
+
+        /* =========================
+           VALIDAÇÃO DO TWITCH
+        ========================= */
+
+        if (
+          member.twitch_nick.length < 2 ||
+          member.twitch_nick.length > 50
+        ) {
+
+          throw new Error(
+            'O nick da Twitch deve ter entre 2 e 50 caracteres.'
+          );
+        }
+
+
+        /* =========================
+           VERIFICAR DUPLICADOS
+        ========================= */
+
+        const normalizedNick =
+          member.twitch_nick
+            .trim()
+            .toLowerCase();
+
+
+        const {
+          data: existingMembers,
+          error: checkError
+        } =
+          await supabase
+            .from('members')
+            .select(
+              'id, phone, twitch_nick'
+            )
+            .or(
+              `phone.eq.${member.phone},twitch_nick.ilike.${normalizedNick}`
+            );
+
+
+        if (checkError) {
+
+          console.error(
+            'Erro ao verificar cadastro:',
+            checkError
+          );
+
+          throw new Error(
+            'Não foi possível verificar seus dados. Tente novamente.'
+          );
+        }
+
+
+        /* =========================
+           VERIFICAR TELEFONE
+        ========================= */
+
+        const phoneExists =
+          existingMembers?.some(
+            item =>
+              String(
+                item.phone || ''
+              ) === member.phone
+          );
+
+
+        if (phoneExists) {
+
+          throw new Error(
+            'Este número de telefone já possui um cadastro.'
+          );
+        }
+
+
+        /* =========================
+           VERIFICAR TWITCH
+        ========================= */
+
+        const twitchExists =
+          existingMembers?.some(
+            item =>
+              String(
+                item.twitch_nick || ''
+              )
+                .trim()
+                .toLowerCase() ===
+              normalizedNick
+          );
+
+
+        if (twitchExists) {
+
+          throw new Error(
+            'Este nick da Twitch já possui um cadastro.'
+          );
+        }
+
+
+        /* =========================
+           ENVIO PARA SUPABASE
+        ========================= */
+
+        const {
+          data,
+          error
+        } =
+          await supabase
+            .from('members')
+            .insert(member)
+            .select()
+            .single();
+
+
+        if (error) {
+
+          console.error(
+            'Erro ao cadastrar membro:',
+            error
+          );
+
+
+          if (
+            error.code === '23505'
+          ) {
+
+            if (
+              error.message
+                ?.toLowerCase()
+                .includes('phone')
+            ) {
+
+              throw new Error(
+                'Este número de telefone já possui um cadastro.'
+              );
+            }
+
+
+            if (
+              error.message
+                ?.toLowerCase()
+                .includes('twitch')
+            ) {
+
+              throw new Error(
+                'Este nick da Twitch já possui um cadastro.'
+              );
+            }
+
+
+            throw new Error(
+              'Este telefone ou nick da Twitch já está cadastrado.'
+            );
+          }
+
+
+          throw new Error(
+            error.message ||
+            'Não foi possível cadastrar o membro.'
+          );
+        }
+
+
+        console.log(
+          'Membro cadastrado:',
+          data
         );
+
+
+        form.reset();
+
+
+        feedback(
+          $('#form-feedback'),
+          'Cadastro realizado. Você já está na comunidade!',
+          'success'
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          'Erro no cadastro:',
+          error
+        );
+
+
+        feedback(
+          $('#form-feedback'),
+          error.message ||
+          'Não foi possível concluir agora. Tente novamente.',
+          'error'
+        );
+
+
+      } finally {
+
+        if (button) {
+
+          button.disabled = false;
+          button.innerHTML =
+            original;
+        }
+
       }
 
-      /* =========================
-         SUCESSO
-      ========================= */
+    }
+  );
+}
 
-      console.log(
-        'Membro cadastrado com sucesso:',
-        data
-      );
 
-      form.reset();
+/* =========================================================
+   EXCLUIR TODOS OS MEMBROS
+========================================================= */
 
-      feedback(
-        $('#form-feedback'),
-        'Cadastro realizado. Você já está na comunidade!',
-        'success'
-      );
+async function deleteAllMembers() {
 
-    } catch (error) {
+  if (!state.members.length) {
+
+    showDashboardMessage(
+      'Não existem membros para excluir.'
+    );
+
+    return;
+  }
+
+
+  const confirmed =
+    window.confirm(
+      `ATENÇÃO!\n\n` +
+      `Você está prestes a excluir TODOS os ${state.members.length} membros.\n\n` +
+      `As gorjetas relacionadas também serão excluídas.\n\n` +
+      `Essa ação não pode ser desfeita.\n\n` +
+      `Deseja continuar?`
+    );
+
+
+  if (!confirmed) return;
+
+
+  const doubleConfirmed =
+    window.confirm(
+      'CONFIRMAÇÃO FINAL:\n\n' +
+      'Você realmente deseja excluir TODOS os cadastros?'
+    );
+
+
+  if (!doubleConfirmed) return;
+
+
+  try {
+
+    const { error } =
+      await supabase
+        .from('members')
+        .delete()
+        .neq(
+          'id',
+          '00000000-0000-0000-0000-000000000000'
+        );
+
+
+    if (error) {
 
       console.error(
-        'Erro no cadastro:',
+        'Erro ao excluir membros:',
         error
       );
 
-      feedback(
-        $('#form-feedback'),
-        error.message ||
-        'Não foi possível concluir agora. Tente novamente.',
-        'error'
-      );
-
-    } finally {
-
-      if (button) {
-        button.disabled = false;
-        button.innerHTML = original;
-      }
+      throw error;
     }
-  });
+
+
+    state.members = [];
+    state.tips = [];
+
+
+    renderAll();
+
+
+    showDashboardMessage(
+      'Todos os cadastros foram excluídos com sucesso.'
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      'Erro ao excluir todos os membros:',
+      error
+    );
+
+
+    showDashboardMessage(
+      `Não foi possível excluir os cadastros: ${
+        error.message ||
+        'erro desconhecido'
+      }`
+    );
+  }
 }
+
 
 /* =========================================================
    ADMIN
@@ -443,10 +631,14 @@ function initMembers() {
 function initAdmin() {
 
   if (
-    sessionStorage.getItem('gaucho_admin') === 'true'
+    sessionStorage.getItem(
+      'gaucho_admin'
+    ) === 'true'
   ) {
+
     showDashboard();
   }
+
 
   $('#login-form')?.addEventListener(
     'submit',
@@ -454,15 +646,20 @@ function initAdmin() {
 
       event.preventDefault();
 
-      const values = Object.fromEntries(
-        new FormData(
-          event.currentTarget
-        ).entries()
-      );
+
+      const values =
+        Object.fromEntries(
+          new FormData(
+            event.currentTarget
+          ).entries()
+        );
+
 
       if (
-        values.username === ADMIN_USER &&
-        values.password === ADMIN_PASSWORD
+        values.username ===
+          ADMIN_USER &&
+        values.password ===
+          ADMIN_PASSWORD
       ) {
 
         sessionStorage.setItem(
@@ -470,7 +667,9 @@ function initAdmin() {
           'true'
         );
 
+
         showDashboard();
+
 
       } else {
 
@@ -479,9 +678,12 @@ function initAdmin() {
           'Login ou senha incorretos.',
           'error'
         );
+
       }
+
     }
   );
+
 
   $('#logout-button')?.addEventListener(
     'click',
@@ -492,8 +694,17 @@ function initAdmin() {
       );
 
       location.reload();
+
     }
   );
+
+
+  $('#delete-all-members')
+    ?.addEventListener(
+      'click',
+      deleteAllMembers
+    );
+
 }
 
 
@@ -503,9 +714,13 @@ function initAdmin() {
 
 async function showDashboard() {
 
-  $('#login-view')?.classList.add('hidden');
+  $('#login-view')
+    ?.classList.add('hidden');
 
-  $('#dashboard-view')?.classList.remove('hidden');
+
+  $('#dashboard-view')
+    ?.classList.remove('hidden');
+
 
   document
     .querySelectorAll('.nav-item')
@@ -513,27 +728,39 @@ async function showDashboard() {
 
       item.addEventListener(
         'click',
-        () => switchTab(item.dataset.tab)
+        () =>
+          switchTab(
+            item.dataset.tab
+          )
       );
+
     });
 
-  $('#member-search')?.addEventListener(
-    'input',
-    (event) => {
 
-      state.filter =
-        event.target.value.toLowerCase();
+  $('#member-search')
+    ?.addEventListener(
+      'input',
+      (event) => {
 
-      renderMembers();
-    }
-  );
+        state.filter =
+          event.target.value
+            .toLowerCase();
 
-  $('#spin-button')?.addEventListener(
-    'click',
-    spinRoulette
-  );
+        renderMembers();
+
+      }
+    );
+
+
+  $('#spin-button')
+    ?.addEventListener(
+      'click',
+      spinRoulette
+    );
+
 
   await loadData();
+
 }
 
 
@@ -545,12 +772,17 @@ async function loadData() {
 
   try {
 
-    const membersResult = await supabase
-      .from('members')
-      .select('*')
-      .order('created_at', {
-        ascending: false
-      });
+    const membersResult =
+      await supabase
+        .from('members')
+        .select('*')
+        .order(
+          'created_at',
+          {
+            ascending: false
+          }
+        );
+
 
     if (membersResult.error) {
 
@@ -562,18 +794,24 @@ async function loadData() {
       throw membersResult.error;
     }
 
-    const tipsResult = await supabase
-      .from('tips')
-      .select(`
-        *,
-        members (
-          full_name,
-          twitch_nick
-        )
-      `)
-      .order('created_at', {
-        ascending: false
-      });
+
+    const tipsResult =
+      await supabase
+        .from('tips')
+        .select(`
+          *,
+          members (
+            full_name,
+            twitch_nick
+          )
+        `)
+        .order(
+          'created_at',
+          {
+            ascending: false
+          }
+        );
+
 
     if (tipsResult.error) {
 
@@ -585,13 +823,17 @@ async function loadData() {
       throw tipsResult.error;
     }
 
+
     state.members =
       membersResult.data || [];
+
 
     state.tips =
       tipsResult.data || [];
 
+
     renderAll();
+
 
   } catch (error) {
 
@@ -600,13 +842,16 @@ async function loadData() {
       error
     );
 
+
     showDashboardMessage(
       `Erro ao carregar dados: ${
         error.message ||
         'Erro desconhecido'
       }`
     );
+
   }
+
 }
 
 
@@ -620,15 +865,22 @@ function renderAll() {
   renderRoulette();
   renderTips();
 
+
   if ($('#nav-member-count')) {
-    $('#nav-member-count').textContent =
+
+    $('#nav-member-count')
+      .textContent =
       state.members.length;
   }
 
+
   if ($('#nav-tip-count')) {
-    $('#nav-tip-count').textContent =
+
+    $('#nav-tip-count')
+      .textContent =
       state.tips.length;
   }
+
 }
 
 
@@ -646,13 +898,16 @@ function renderMembers() {
           .includes(state.filter)
     );
 
+
   if (!$('#members-grid')) return;
+
 
   $('#members-grid').innerHTML =
     filtered.length
       ? filtered
           .map(
             (member) => `
+
               <article class="member-card">
 
                 <div class="member-top">
@@ -683,6 +938,7 @@ function renderMembers() {
 
                 </div>
 
+
                 <div class="member-meta">
 
                   <div class="phone-protected">
@@ -700,6 +956,7 @@ function renderMembers() {
                       )}
                     </span>
 
+
                     <button
                       type="button"
                       class="phone-toggle"
@@ -711,6 +968,7 @@ function renderMembers() {
 
                   </div>
 
+
                   <button
                     class="card-tip"
                     data-tip-member="${member.id}"
@@ -721,14 +979,19 @@ function renderMembers() {
                 </div>
 
               </article>
+
             `
           )
           .join('')
+
       : `
+
         <div class="empty-state">
           Nenhum membro encontrado ainda.
         </div>
+
       `;
+
 
   document
     .querySelectorAll(
@@ -744,9 +1007,12 @@ function renderMembers() {
             'members'
           )
       );
+
     });
 
+
   setupPhoneVisibility();
+
 }
 
 
@@ -758,17 +1024,21 @@ function renderRoulette() {
 
   if ($('#roulette-count')) {
 
-    $('#roulette-count').textContent =
+    $('#roulette-count')
+      .textContent =
       state.members.length;
   }
 
+
   if (!$('#roulette-list')) return;
+
 
   $('#roulette-list').innerHTML =
     state.members.length
       ? state.members
           .map(
             (member) => `
+
               <div class="roulette-person">
 
                 <strong>
@@ -784,14 +1054,19 @@ function renderRoulette() {
                 </span>
 
               </div>
+
             `
           )
           .join('')
+
       : `
+
         <div class="empty-state">
           Cadastre membros para liberar a roleta.
         </div>
+
       `;
+
 }
 
 
@@ -807,13 +1082,16 @@ function renderTips() {
       state.tips.length;
   }
 
+
   if (!$('#tips-list')) return;
+
 
   $('#tips-list').innerHTML =
     state.tips.length
       ? state.tips
           .map(
             (tip) => `
+
               <div class="tip-row">
 
                 <div class="tip-winner">
@@ -834,9 +1112,11 @@ function renderTips() {
 
                 </div>
 
+
                 <div class="tip-detail">
                   Gorjeta registrada
                 </div>
+
 
                 <div class="tip-kind">
                   ${
@@ -846,6 +1126,7 @@ function renderTips() {
                   }
                 </div>
 
+
                 <div class="tip-date">
                   ${new Date(
                     tip.created_at
@@ -854,15 +1135,165 @@ function renderTips() {
                   )}
                 </div>
 
+
+                <button
+                  type="button"
+                  class="delete-tip-button"
+                  data-tip-id="${escapeHtml(tip.id)}"
+                  title="Excluir gorjeta"
+                  aria-label="Excluir gorjeta"
+                >
+                  🗑
+                </button>
+
               </div>
+
             `
           )
           .join('')
+
       : `
+
         <div class="empty-state">
           Nenhuma gorjeta registrada ainda.
         </div>
+
       `;
+
+
+  setupTipDeleteButtons();
+
+}
+
+
+/* =========================================================
+   BOTÕES DE EXCLUSÃO DAS GORJETAS
+========================================================= */
+
+function setupTipDeleteButtons() {
+
+  document
+    .querySelectorAll(
+      '.delete-tip-button'
+    )
+    .forEach((button) => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          const tipId =
+            button.dataset.tipId;
+
+          if (!tipId) return;
+
+          deleteTip(tipId);
+
+        }
+      );
+
+    });
+
+}
+
+
+/* =========================================================
+   EXCLUIR UMA GORJETA
+========================================================= */
+
+async function deleteTip(tipId) {
+
+  const tip =
+    state.tips.find(
+      item =>
+        String(item.id) ===
+        String(tipId)
+    );
+
+
+  if (!tip) {
+
+    showDashboardMessage(
+      'Gorjeta não encontrada.'
+    );
+
+    return;
+  }
+
+
+  const memberName =
+    tip.members?.full_name ||
+    tip.member_name ||
+    'Membro';
+
+
+  const confirmed =
+    window.confirm(
+      `Excluir esta gorjeta?\n\n` +
+      `Membro: ${memberName}\n\n` +
+      `Essa ação não pode ser desfeita.`
+    );
+
+
+  if (!confirmed) return;
+
+
+  try {
+
+    const { error } =
+      await supabase
+        .from('tips')
+        .delete()
+        .eq(
+          'id',
+          tipId
+        );
+
+
+    if (error) {
+
+      console.error(
+        'Erro ao excluir gorjeta:',
+        error
+      );
+
+      throw error;
+    }
+
+
+    state.tips =
+      state.tips.filter(
+        item =>
+          String(item.id) !==
+          String(tipId)
+      );
+
+
+    renderAll();
+
+
+    showDashboardMessage(
+      'Gorjeta excluída com sucesso.'
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      'Erro ao excluir gorjeta:',
+      error
+    );
+
+
+    showDashboardMessage(
+      `Não foi possível excluir a gorjeta: ${
+        error.message ||
+        'erro desconhecido'
+      }`
+    );
+
+  }
+
 }
 
 
@@ -880,7 +1311,9 @@ function switchTab(tab) {
         'active',
         item.dataset.tab === tab
       );
+
     });
+
 
   document
     .querySelectorAll('.tab-content')
@@ -888,9 +1321,12 @@ function switchTab(tab) {
 
       content.classList.toggle(
         'active',
-        content.id === `${tab}-tab`
+        content.id ===
+        `${tab}-tab`
       );
+
     });
+
 
   if ($('#page-title')) {
 
@@ -900,7 +1336,9 @@ function switchTab(tab) {
         : tab === 'roulette'
         ? 'Roleta'
         : 'Gorjetas';
+
   }
+
 }
 
 
@@ -920,6 +1358,7 @@ async function registerTip(
         String(memberId)
     );
 
+
   if (!member) {
 
     console.error(
@@ -930,20 +1369,32 @@ async function registerTip(
     return;
   }
 
+
   const validSource =
     source === 'roulette'
       ? 'roulette'
       : 'members';
 
+
   try {
 
-    const { data, error } =
+    const {
+      data,
+      error
+    } =
       await supabase
         .from('tips')
         .insert({
-          member_id: member.id,
-          amount: 50.00,
-          source: validSource
+
+          member_id:
+            member.id,
+
+          amount:
+            50.00,
+
+          source:
+            validSource
+
         })
         .select(`
           *,
@@ -953,6 +1404,7 @@ async function registerTip(
           )
         `)
         .single();
+
 
     if (error) {
 
@@ -964,13 +1416,19 @@ async function registerTip(
       throw error;
     }
 
-    state.tips.unshift(data);
+
+    state.tips.unshift(
+      data
+    );
+
 
     renderAll();
+
 
     showDashboardMessage(
       `Gorjeta registrada para ${member.full_name}.`
     );
+
 
   } catch (error) {
 
@@ -979,13 +1437,16 @@ async function registerTip(
       error
     );
 
+
     showDashboardMessage(
       `Não foi possível registrar a gorjeta: ${
         error.message ||
         'erro desconhecido'
       }`
     );
+
   }
+
 }
 
 
@@ -1004,17 +1465,23 @@ async function spinRoulette() {
     return;
   }
 
+
   const button =
     $('#spin-button');
+
 
   const result =
     $('#roulette-result');
 
+
   if (!button || !result) return;
+
 
   button.disabled = true;
 
+
   let chosen = null;
+
 
   for (
     let index = 0;
@@ -1030,7 +1497,9 @@ async function spinRoulette() {
         )
       ];
 
+
     result.innerHTML = `
+
       <span>
         ${escapeHtml(
           initials(
@@ -1048,7 +1517,9 @@ async function spinRoulette() {
       <small>
         Sorteando...
       </small>
+
     `;
+
 
     await new Promise(
       (resolve) =>
@@ -1057,22 +1528,31 @@ async function spinRoulette() {
           80 + index * 14
         )
     );
+
   }
 
+
   const small =
-    result.querySelector('small');
+    result.querySelector(
+      'small'
+    );
+
 
   if (small) {
+
     small.textContent =
       'Ganhador da rodada';
   }
+
 
   await registerTip(
     chosen.id,
     'roulette'
   );
 
+
   button.disabled = false;
+
 }
 
 
@@ -1087,20 +1567,28 @@ function showDashboardMessage(
   const element =
     $('#dashboard-feedback');
 
+
   if (!element) return;
+
 
   element.textContent =
     message;
+
 
   window.clearTimeout(
     window.gauchoMessage
   );
 
+
   window.gauchoMessage =
     window.setTimeout(
       () => {
-        element.textContent = '';
+
+        element.textContent =
+          '';
+
       },
       5000
     );
+
 }
