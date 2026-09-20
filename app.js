@@ -1842,6 +1842,24 @@ function switchTab(
 
   }
 
+  if (
+    tab === 'cash'
+  ) {
+
+    title =
+      'Cash Gaúcho';
+
+  }
+
+  if (
+    tab === 'bonus'
+  ) {
+
+    title =
+      'RECOLHE O POTE';
+
+  }
+
 
   if (
     tab === 'tips'
