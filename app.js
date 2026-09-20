@@ -1143,6 +1143,8 @@ function renderMembers() {
                   </div>
 
 
+                  <div class="member-tip-actions">
+                    <input class="member-tip-amount" data-tip-amount="${escapeHtml(member.id)}" type="number" min="0.01" step="0.01" value="20.00" inputmode="decimal" aria-label="Valor da gorjeta" />
                   <button
                     type="button"
                     class="card-tip"
@@ -1152,6 +1154,7 @@ function renderMembers() {
                   >
                     Dar gorjeta ✦
                   </button>
+                  </div>
 
                 </div>
 
@@ -1197,6 +1200,9 @@ function renderMembers() {
             const memberId =
               button.dataset.tipMember;
 
+            const amountInput = document.querySelector(`[data-tip-amount="${CSS.escape(memberId)}"]`);
+            const amount = Number(amountInput?.value);
+
 
             if (!memberId) {
 
@@ -1205,9 +1211,13 @@ function renderMembers() {
             }
 
 
-            await playCasinoTipAnimation(
-              memberId
-            );
+            if (!Number.isFinite(amount) || amount <= 0) {
+              showDashboardMessage('Informe um valor de gorjeta maior que zero.');
+              amountInput?.focus();
+              return;
+            }
+
+            await playCasinoTipAnimation(memberId, amount);
 
           }
         );
@@ -1361,6 +1371,17 @@ function renderTips() {
 
                 sourceLabel =
                   'Plinko';
+
+              }
+
+
+              if (
+                tip.source ===
+                'battle_royale'
+              ) {
+
+                sourceLabel =
+                  'Battle Royale';
 
               }
 
@@ -1533,6 +1554,8 @@ async function deleteTip(
       `Origem: ${
         tip.source === 'plinko'
           ? 'Plinko'
+          : tip.source === 'battle_royale'
+          ? 'Battle Royale'
           : tip.source === 'roulette'
           ? 'Roleta'
           : 'Membro'
@@ -1758,6 +1781,16 @@ function switchTab(
 
     title =
       'Plinko';
+
+  }
+
+
+  if (
+    tab === 'battle'
+  ) {
+
+    title =
+      'Battle Royale';
 
   }
 
@@ -2523,7 +2556,8 @@ function createCasinoCoins(
 ========================================================= */
 
 async function playCasinoTipAnimation(
-  memberId
+  memberId,
+  amount = 20
 ) {
 
   if (
@@ -2552,10 +2586,6 @@ async function playCasinoTipAnimation(
     return false;
 
   }
-
-
-  const amount =
-    20.00;
 
 
   state.tipLoading =
@@ -2771,7 +2801,8 @@ async function playCasinoTipAnimation(
       await registerTip(
         member.id,
         'members',
-        true
+        true,
+        amount
       );
 
 
@@ -2939,7 +2970,8 @@ async function playCasinoTipAnimation(
 async function registerTip(
   memberId,
   source = 'members',
-  fromAnimation = false
+  fromAnimation = false,
+  tipAmount = 20
 ) {
 
   if (
@@ -2988,9 +3020,12 @@ async function registerTip(
       : 'members';
 
 
-  const amount =
-    20.00;
+  const amount = Number(tipAmount);
 
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showDashboardMessage('Informe um valor de gorjeta maior que zero.');
+    return false;
+  }
 
   try {
 
@@ -3113,6 +3148,8 @@ async function spinRoulette() {
   const result =
     $('#roulette-result');
 
+  const amount = Number($('#roulette-tip-amount')?.value);
+
 
   if (
     !button ||
@@ -3121,6 +3158,12 @@ async function spinRoulette() {
 
     return;
 
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showDashboardMessage('Informe um valor de gorjeta maior que zero.');
+    $('#roulette-tip-amount')?.focus();
+    return;
   }
 
 
@@ -3198,7 +3241,9 @@ async function spinRoulette() {
 
       await registerTip(
         chosen.id,
-        'roulette'
+        'roulette',
+        false,
+        amount
       );
 
     }

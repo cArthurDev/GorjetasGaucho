@@ -684,6 +684,12 @@
 
     }
 
+    .member-tip-actions { display: flex; align-items: center; gap: 9px; }
+    .member-tip-amount, .tip-amount-control input { width: 82px; border: 1px solid #4b463b; border-radius: 5px; padding: 6px 7px; background: #171717; color: #fff; font-size: 12px; outline: none; }
+    .member-tip-amount:focus, .tip-amount-control input:focus { border-color: #d6a62c; }
+    .tip-amount-control { position: relative; z-index: 1; display: flex; align-items: center; gap: 9px; margin-top: 20px; color: #c9c5bb; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+    .roulette-panel .spin-button { margin-top: 18px; }
+
   </style>
 
 </head>
@@ -863,6 +869,12 @@
             ↗
           </b>
 
+        </button>
+
+        <button class="nav-item" data-tab="battle" type="button">
+          <span class="nav-icon">⚔</span>
+          Battle Royale
+          <b>↗</b>
         </button>
 
 
@@ -1047,6 +1059,12 @@
 
       </section>
 
+      <section id="battle-tab" class="tab-content">
+        <div class="plinko-container">
+          <iframe src="../battle_royale.html" title="Battle Royale do Gaúcho" class="plinko-frame" allow="fullscreen"></iframe>
+        </div>
+      </section>
+
 
       <!-- =================================================
            ROLETA
@@ -1101,6 +1119,11 @@
           </div>
 
 
+          <label class="tip-amount-control" for="roulette-tip-amount">
+            <span>Valor da gorjeta</span>
+            <input id="roulette-tip-amount" type="number" min="0.01" step="0.01" value="20.00" inputmode="decimal" />
+          </label>
+
           <button
             id="spin-button"
             class="button button-gold spin-button"
@@ -1145,23 +1168,6 @@
         id="plinko-tab"
         class="tab-content"
       >
-
-        <div class="section-heading">
-
-          <div>
-
-            <h2>
-              Plinko
-            </h2>
-
-            <p>
-              Sorteio utilizando os membros cadastrados na comunidade.
-            </p>
-
-          </div>
-
-        </div>
-
 
         <div class="plinko-container">
 
