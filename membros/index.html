@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101010" />
+    <title>Membros | Gorjetas do Gaúcho</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body class="public-page">
+    <main class="join-layout">
+      <section class="join-visual">
+        <div class="brand-mark"><span class="brand-dot"></span> GORJETAS DO GAÚCHO</div>
+        <div class="visual-copy">
+          <p class="eyebrow">Comunidade oficial</p>
+          <h1>Faça parte da roda.</h1>
+          <p>Entre para a comunidade do Gaúcho e concorra às gorjetas especiais da live.</p>
+        </div>
+        <div class="visual-footer"><span>AO VIVO</span><span class="live-dot"></span> twitch.tv/gauchostrean</div>
+      </section>
+      <section class="join-form-panel">
+        <a class="admin-link" href="../admin/">Acesso administrativo <span>↗</span></a>
+        <div class="form-wrap">
+          <p class="eyebrow gold">Cadastro de membro</p>
+          <h2>Deixe seus dados<br />com a gente.</h2>
+          <p class="form-intro">É rapidinho. Preencha tudo certinho para aparecer no painel da comunidade.</p>
+          <form id="member-form">
+            <label>Nome completo<input name="full_name" type="text" placeholder="Como podemos te chamar?" autocomplete="name" required /></label>
+            <label>Telefone<input name="phone" type="tel" placeholder="(00) 00000-0000" autocomplete="tel" required /></label>
+            <label>Nick da Twitch<input name="twitch_nick" type="text" placeholder="seu_nick" required /></label>
+            <button class="button button-gold" type="submit">Entrar para a comunidade <span>→</span></button>
+          </form>
+          <div id="form-feedback" class="feedback" role="status"></div>
+        </div>
+        <div class="fine-print">Seus dados ficam guardados apenas para a organização das ações da comunidade.</div>
+      </section>
+    </main>
+    <script type="module" src="../app.js"></script>
+  </body>
+</html>

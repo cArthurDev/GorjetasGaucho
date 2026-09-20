@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101010" />
+    <title>Painel | Gorjetas do Gaúcho</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body class="admin-page">
+    <div id="login-view" class="login-screen">
+      <div class="login-box">
+        <div class="brand-mark"><span class="brand-dot"></span> GORJETAS DO GAÚCHO</div>
+        <p class="eyebrow gold">Área restrita</p>
+        <h1>Bem-vindo<br />de volta.</h1>
+        <p>Entre para gerenciar membros e gorjetas da comunidade.</p>
+        <form id="login-form">
+          <label>Login<input name="username" type="text" placeholder="Seu login" autocomplete="username" required /></label>
+          <label>Senha<input name="password" type="password" placeholder="Sua senha" autocomplete="current-password" required /></label>
+          <button class="button button-gold" type="submit">Acessar painel <span>→</span></button>
+        </form>
+        <div id="login-feedback" class="feedback" role="alert"></div>
+        <a class="back-link" href="../membros/">← Voltar para cadastro</a>
+      </div>
+    </div>
+    <div id="dashboard-view" class="dashboard hidden">
+      <aside class="sidebar">
+        <div class="sidebar-brand"><span class="brand-dot"></span><span>GORJETAS<br /><strong>DO GAÚCHO</strong></span></div>
+        <div class="sidebar-label">Painel de controle</div>
+        <nav class="side-nav" aria-label="Navegação principal">
+          <button class="nav-item active" data-tab="members"><span class="nav-icon">♙</span> Membros <b id="nav-member-count">0</b></button>
+          <button class="nav-item" data-tab="roulette"><span class="nav-icon">◉</span> Roleta <b>↗</b></button>
+          <button class="nav-item" data-tab="tips"><span class="nav-icon">✦</span> Gorjetas <b id="nav-tip-count">0</b></button>
+        </nav>
+        <div class="sidebar-bottom"><div class="status-line"><span class="status-dot"></span> Sistema online</div><button id="logout-button" class="logout-button">Sair da conta <span>↗</span></button></div>
+      </aside>
+      <main class="dashboard-main">
+        <header class="topbar"><div><p class="eyebrow">Visão geral</p><h1 id="page-title">Membros</h1></div><div class="topbar-actions"><a href="../membros/" class="outline-button">Ver cadastro <span>↗</span></a><div class="avatar">G</div></div></header>
+        <div id="dashboard-feedback" class="dashboard-feedback" role="status"></div>
+        <section id="members-tab" class="tab-content active"><div class="section-heading"><div><h2>Todos os membros</h2><p>Quem já faz parte da comunidade.</p></div><div class="search-box">⌕<input id="member-search" type="search" placeholder="Buscar membro" /></div></div><div id="members-grid" class="cards-grid"></div></section>
+        <section id="roulette-tab" class="tab-content"><div class="section-heading"><div><h2>Roleta da vez</h2><p>Todos os membros cadastrados participam do sorteio.</p></div></div><div class="roulette-panel"><div class="roulette-badge">✦ SORTEIO DA COMUNIDADE</div><div id="roulette-result" class="roulette-result"><span>?</span><strong>Pronto para girar?</strong><small>O próximo ganhador aparece aqui.</small></div><button id="spin-button" class="button button-gold spin-button">Girar roleta <span>↻</span></button></div><h2 class="subheading">Participantes <span id="roulette-count">0</span></h2><div id="roulette-list" class="roulette-list"></div></section>
+        <section id="tips-tab" class="tab-content"><div class="section-heading"><div><h2>Histórico de gorjetas</h2><p>Ganhadores registrados pelo painel e pela roleta.</p></div><div class="total-highlight"><span>Total de gorjetas</span><strong id="tip-total">0</strong></div></div><div id="tips-list" class="tips-list"></div></section>
+      </main>
+    </div>
+    <script type="module" src="../app.js"></script>
+  </body>
+</html>
