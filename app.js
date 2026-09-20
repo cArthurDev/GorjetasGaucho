@@ -931,7 +931,8 @@ async function loadData() {
           *,
           members (
             full_name,
-            twitch_nick
+            twitch_nick,
+            phone
           )
         `)
         .order(
@@ -1397,6 +1398,17 @@ function renderTips() {
                 '';
 
 
+              const phone = String(
+                tip.members?.phone || ''
+              ).replace(/\D/g, '');
+
+
+              const whatsappUrl =
+                phone.length === 11
+                  ? `https://wa.me/55${phone}`
+                  : '';
+
+
               let sourceLabel =
                 'Membro';
 
@@ -1483,6 +1495,23 @@ function renderTips() {
                     )}
 
                   </div>
+
+
+                  ${
+                    whatsappUrl
+                      ? `
+                        <a
+                          class="whatsapp-tip-button"
+                          href="${whatsappUrl}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Abrir WhatsApp de ${escapeHtml(memberName)}"
+                        >
+                          WhatsApp
+                        </a>
+                      `
+                      : ''
+                  }
 
 
                   <button
@@ -3113,7 +3142,8 @@ async function registerTip(
         *,
         members (
           full_name,
-          twitch_nick
+          twitch_nick,
+          phone
         )
       `)
       .single();

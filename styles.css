@@ -448,6 +448,37 @@
   transform: scale(0.92);
 }
 
+.tip-row {
+  grid-template-columns: 1.5fr 1fr 1fr auto auto auto;
+}
+
+.whatsapp-tip-button {
+  border: 1px solid rgba(37, 211, 102, 0.45);
+  border-radius: 9px;
+  background: rgba(37, 211, 102, 0.1);
+  color: #57d987;
+  padding: 9px 11px;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.whatsapp-tip-button:hover {
+  background: rgba(37, 211, 102, 0.2);
+  border-color: #25d366;
+}
+
+.whatsapp-tip-button:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 800px) {
+  .tip-row {
+    grid-template-columns: 1fr auto auto;
+  }
+}
+
 /* =========================
    PLINKO
 ========================= */
