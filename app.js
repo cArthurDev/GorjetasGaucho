@@ -264,6 +264,70 @@ function initMembers() {
       }
 
       /* =========================
+         VERIFICAR DUPLICADOS
+      ========================= */
+
+      const normalizedNick =
+        member.twitch_nick
+          .trim()
+          .toLowerCase();
+
+      const { data: existingMembers, error: checkError } =
+        await supabase
+          .from('members')
+          .select('id, phone, twitch_nick')
+          .or(
+            `phone.eq.${member.phone},twitch_nick.ilike.${normalizedNick}`
+          );
+
+      if (checkError) {
+        console.error(
+          'Erro ao verificar cadastro:',
+          checkError
+        );
+
+        throw new Error(
+          'Não foi possível verificar seus dados. Tente novamente.'
+        );
+      }
+
+      /* =========================
+         VERIFICAR TELEFONE
+      ========================= */
+
+      const phoneExists =
+        existingMembers?.some(
+          item =>
+            String(item.phone || '') ===
+            member.phone
+        );
+
+      if (phoneExists) {
+        throw new Error(
+          'Este número de telefone já possui um cadastro.'
+        );
+      }
+
+      /* =========================
+         VERIFICAR TWITCH
+      ========================= */
+
+      const twitchExists =
+        existingMembers?.some(
+          item =>
+            String(item.twitch_nick || '')
+              .trim()
+              .toLowerCase() ===
+            normalizedNick
+        );
+
+      if (twitchExists) {
+        throw new Error(
+          'Este nick da Twitch já possui um cadastro.'
+        );
+      }
+
+      /* =========================
          ENVIO PARA SUPABASE
       ========================= */
 
@@ -282,17 +346,58 @@ function initMembers() {
         }
       );
 
+      /* =========================
+         TRATAMENTO DE ERRO
+      ========================= */
+
       if (error) {
         console.error(
           'Erro ao cadastrar membro:',
           error
         );
 
+        /*
+         * 23505 = violação de UNIQUE
+         * Isso protege contra duas pessoas
+         * cadastrando o mesmo dado ao mesmo tempo.
+         */
+
+        if (error.code === '23505') {
+
+          if (
+            error.message
+              ?.toLowerCase()
+              .includes('phone')
+          ) {
+            throw new Error(
+              'Este número de telefone já possui um cadastro.'
+            );
+          }
+
+          if (
+            error.message
+              ?.toLowerCase()
+              .includes('twitch')
+          ) {
+            throw new Error(
+              'Este nick da Twitch já possui um cadastro.'
+            );
+          }
+
+          throw new Error(
+            'Este telefone ou nick da Twitch já está cadastrado.'
+          );
+        }
+
         throw new Error(
           error.message ||
           'Não foi possível cadastrar o membro.'
         );
       }
+
+      /* =========================
+         SUCESSO
+      ========================= */
 
       console.log(
         'Membro cadastrado com sucesso:',
@@ -330,7 +435,6 @@ function initMembers() {
     }
   });
 }
-
 
 /* =========================================================
    ADMIN
