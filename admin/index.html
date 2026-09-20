@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
@@ -22,12 +23,12 @@
 
   <link
     rel="preconnect"
-    href="https://fonts.gstatic.com"
+    href="https://fonts.googleapis.com"
     crossorigin
   />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap"
     rel="stylesheet"
   />
 
@@ -35,6 +36,656 @@
     rel="stylesheet"
     href="../styles.css"
   />
+
+  <style>
+
+    /* =====================================================
+       BOTÃO ATUALIZAR
+    ====================================================== */
+
+    #refresh-dashboard {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    #refresh-icon {
+      display: inline-block;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    #refresh-dashboard.is-refreshing #refresh-icon {
+      animation: refresh-spin .8s linear infinite;
+    }
+
+    @keyframes refresh-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #refresh-dashboard:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    @media (max-width: 700px) {
+
+      #refresh-dashboard {
+        padding: 0 10px;
+      }
+
+      #refresh-dashboard .refresh-text {
+        display: none;
+      }
+
+    }
+
+
+    /* =====================================================
+       ANIMAÇÃO DE CASSINO
+    ====================================================== */
+
+    .casino-overlay {
+
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 999999;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 20px;
+
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(255, 193, 7, .12),
+          rgba(0, 0, 0, .94) 55%,
+          #000 100%
+        );
+
+      backdrop-filter: blur(8px);
+
+      opacity: 0;
+
+      visibility: hidden;
+
+      pointer-events: none;
+
+      transition:
+        opacity .3s ease,
+        visibility .3s ease;
+
+    }
+
+
+    .casino-overlay.active {
+
+      opacity: 1;
+
+      visibility: visible;
+
+      pointer-events: auto;
+
+    }
+
+
+    .casino-machine {
+
+      position: relative;
+
+      width: min(520px, 94vw);
+
+      padding: 38px 28px 32px;
+
+      border-radius: 28px;
+
+      background:
+
+        linear-gradient(
+          145deg,
+          #171717,
+          #080808
+        );
+
+      border: 2px solid #d6a62c;
+
+      box-shadow:
+
+        0 0 0 5px rgba(214,166,44,.08),
+
+        0 0 40px rgba(255,193,7,.18),
+
+        0 30px 100px rgba(0,0,0,.8);
+
+      text-align: center;
+
+      transform:
+        scale(.75)
+        translateY(40px);
+
+      transition:
+        transform .5s cubic-bezier(.2,1.4,.4,1);
+
+      overflow: hidden;
+
+    }
+
+
+    .casino-overlay.active
+    .casino-machine {
+
+      transform:
+        scale(1)
+        translateY(0);
+
+    }
+
+
+    /* luzes */
+
+    .casino-lights {
+
+      position: absolute;
+
+      inset: 0;
+
+      pointer-events: none;
+
+    }
+
+
+    .casino-light {
+
+      position: absolute;
+
+      width: 8px;
+
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: #ffd54a;
+
+      box-shadow:
+        0 0 12px #ffd54a;
+
+      animation:
+        casino-blink .55s infinite alternate;
+
+    }
+
+
+    .casino-light:nth-child(1) {
+      top: 12px;
+      left: 12px;
+    }
+
+    .casino-light:nth-child(2) {
+      top: 12px;
+      left: 50%;
+    }
+
+    .casino-light:nth-child(3) {
+      top: 12px;
+      right: 12px;
+    }
+
+    .casino-light:nth-child(4) {
+      bottom: 12px;
+      left: 12px;
+    }
+
+    .casino-light:nth-child(5) {
+      bottom: 12px;
+      left: 50%;
+    }
+
+    .casino-light:nth-child(6) {
+      bottom: 12px;
+      right: 12px;
+    }
+
+
+    @keyframes casino-blink {
+
+      from {
+        opacity: .25;
+        transform: scale(.75);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1.25);
+      }
+
+    }
+
+
+    .casino-brand {
+
+      position: relative;
+
+      font-family:
+        'Space Grotesk',
+        sans-serif;
+
+      font-size: 13px;
+
+      font-weight: 800;
+
+      letter-spacing: 3px;
+
+      color: #d6a62c;
+
+      margin-bottom: 8px;
+
+    }
+
+
+    .casino-title {
+
+      position: relative;
+
+      margin: 0;
+
+      font-family:
+        'Space Grotesk',
+        sans-serif;
+
+      font-size: clamp(38px, 8vw, 64px);
+
+      line-height: .95;
+
+      font-weight: 800;
+
+      font-style: italic;
+
+      color: #fff;
+
+      text-shadow:
+        0 0 8px rgba(255,255,255,.4),
+        0 0 30px rgba(255,193,7,.5);
+
+      animation:
+        casino-title-pulse 1s infinite alternate;
+
+    }
+
+
+    @keyframes casino-title-pulse {
+
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.04);
+      }
+
+    }
+
+
+    .casino-subtitle {
+
+      position: relative;
+
+      margin-top: 10px;
+
+      color: #aaa;
+
+      font-size: 14px;
+
+    }
+
+
+    /* roletas */
+
+    .casino-reels {
+
+      position: relative;
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 10px;
+
+      margin: 28px auto 22px;
+
+      max-width: 390px;
+
+    }
+
+
+    .casino-reel {
+
+      height: 105px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      overflow: hidden;
+
+      border-radius: 15px;
+
+      border: 2px solid #555;
+
+      background:
+
+        linear-gradient(
+          180deg,
+          #fafafa,
+          #bcbcbc
+        );
+
+      box-shadow:
+
+        inset 0 5px 10px rgba(0,0,0,.18),
+
+        0 8px 20px rgba(0,0,0,.35);
+
+      font-size: 55px;
+
+      transition:
+        transform .12s ease;
+
+    }
+
+
+    .casino-reel.spinning {
+
+      animation:
+        reel-shake .08s linear infinite;
+
+    }
+
+
+    @keyframes reel-shake {
+
+      0% {
+        transform: translateY(-2px);
+      }
+
+      50% {
+        transform: translateY(2px);
+      }
+
+      100% {
+        transform: translateY(-2px);
+      }
+
+    }
+
+
+    .casino-reel.win {
+
+      border-color: #ffd54a;
+
+      box-shadow:
+
+        0 0 20px rgba(255,213,74,.7),
+
+        inset 0 0 20px rgba(255,213,74,.2);
+
+      animation:
+        reel-win .4s ease infinite alternate;
+
+    }
+
+
+    @keyframes reel-win {
+
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.06);
+      }
+
+    }
+
+
+    .casino-amount {
+
+      position: relative;
+
+      font-family:
+        'Space Grotesk',
+        sans-serif;
+
+      font-size: 34px;
+
+      font-weight: 800;
+
+      color: #ffd54a;
+
+      text-shadow:
+        0 0 18px rgba(255,193,7,.45);
+
+    }
+
+
+    .casino-member {
+
+      position: relative;
+
+      margin-top: 5px;
+
+      color: #fff;
+
+      font-weight: 700;
+
+      font-size: 17px;
+
+    }
+
+
+    .casino-status {
+
+      position: relative;
+
+      margin-top: 18px;
+
+      min-height: 24px;
+
+      font-size: 14px;
+
+      font-weight: 600;
+
+      color: #bbb;
+
+    }
+
+
+    .casino-status.success {
+
+      color: #ffd54a;
+
+      font-size: 17px;
+
+      animation:
+        status-pulse .5s infinite alternate;
+
+    }
+
+
+    .casino-status.error {
+
+      color: #ff5b5b;
+
+    }
+
+
+    @keyframes status-pulse {
+
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.08);
+      }
+
+    }
+
+
+    /* moedas */
+
+    .casino-particles {
+
+      position: fixed;
+
+      inset: 0;
+
+      pointer-events: none;
+
+      overflow: hidden;
+
+      z-index: 1000000;
+
+    }
+
+
+    .casino-particle {
+
+      position: absolute;
+
+      top: 50%;
+
+      left: 50%;
+
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle at 30% 30%,
+          #fff4a3,
+          #ffd54a 45%,
+          #c89413 100%
+        );
+
+      box-shadow:
+        0 0 8px rgba(255,213,74,.7);
+
+      animation:
+        casino-particle-explode
+        1.1s
+        cubic-bezier(.1,.7,.2,1)
+        forwards;
+
+    }
+
+
+    @keyframes casino-particle-explode {
+
+      from {
+
+        transform:
+          translate(-50%, -50%)
+          scale(.3);
+
+        opacity: 1;
+
+      }
+
+      to {
+
+        transform:
+          translate(
+            calc(-50% + var(--x)),
+            calc(-50% + var(--y))
+          )
+          scale(1);
+
+        opacity: 0;
+
+      }
+
+    }
+
+
+    /* brilho */
+
+    .casino-scan {
+
+      position: absolute;
+
+      inset: 0;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          110deg,
+          transparent 35%,
+          rgba(255,255,255,.08) 50%,
+          transparent 65%
+        );
+
+      transform:
+        translateX(-100%);
+
+      animation:
+        casino-scan 1.8s infinite;
+
+    }
+
+
+    @keyframes casino-scan {
+
+      to {
+        transform: translateX(100%);
+      }
+
+    }
+
+
+    @media (max-width: 520px) {
+
+      .casino-machine {
+
+        padding:
+          32px 16px 25px;
+
+      }
+
+      .casino-reels {
+
+        gap: 6px;
+
+      }
+
+      .casino-reel {
+
+        height: 85px;
+
+        font-size: 42px;
+
+      }
+
+    }
+
+  </style>
+
 </head>
 
 
@@ -57,22 +708,18 @@
         GORJETAS DO GAÚCHO
       </div>
 
-
       <p class="eyebrow gold">
         Área restrita
       </p>
-
 
       <h1>
         Painel<br />
         do Gaúcho.
       </h1>
 
-
       <p>
         Entre para acompanhar membros e gorjetas.
       </p>
-
 
       <form id="login-form">
 
@@ -88,7 +735,6 @@
           />
         </label>
 
-
         <label>
           Senha
 
@@ -101,7 +747,6 @@
           />
         </label>
 
-
         <button
           class="button button-gold"
           type="submit"
@@ -112,13 +757,11 @@
 
       </form>
 
-
       <div
         id="login-feedback"
         class="feedback"
         role="alert"
       ></div>
-
 
       <a
         class="back-link"
@@ -141,11 +784,6 @@
     id="dashboard-view"
     class="dashboard hidden"
   >
-
-
-    <!-- ===================================================
-         SIDEBAR
-    ==================================================== -->
 
     <aside class="sidebar">
 
@@ -211,6 +849,25 @@
 
         <button
           class="nav-item"
+          data-tab="plinko"
+          type="button"
+        >
+
+          <span class="nav-icon">
+            ◈
+          </span>
+
+          Plinko
+
+          <b>
+            ↗
+          </b>
+
+        </button>
+
+
+        <button
+          class="nav-item"
           data-tab="tips"
           type="button"
         >
@@ -260,17 +917,8 @@
     </aside>
 
 
-
-    <!-- ===================================================
-         CONTEÚDO PRINCIPAL
-    ==================================================== -->
-
     <main class="dashboard-main">
 
-
-      <!-- =================================================
-           TOPBAR
-      ================================================== -->
 
       <header class="topbar">
 
@@ -289,12 +937,35 @@
 
         <div class="topbar-actions">
 
+          <button
+            id="refresh-dashboard"
+            class="outline-button"
+            type="button"
+            title="Atualizar dados"
+          >
+
+            <span id="refresh-icon">
+              ↻
+            </span>
+
+            <span class="refresh-text">
+              Atualizar
+            </span>
+
+          </button>
+
+
           <a
             href="../membros/"
             class="outline-button"
           >
+
             Ver cadastro
-            <span>↗</span>
+
+            <span>
+              ↗
+            </span>
+
           </a>
 
 
@@ -307,20 +978,16 @@
       </header>
 
 
-      <!-- =================================================
-           FEEDBACK
-      ================================================== -->
-
       <div
         id="dashboard-feedback"
         class="dashboard-feedback"
         role="status"
+        aria-live="polite"
       ></div>
 
 
-
       <!-- =================================================
-           ABA MEMBROS
+           MEMBROS
       ================================================== -->
 
       <section
@@ -329,9 +996,6 @@
       >
 
         <div class="section-heading">
-
-
-          <!-- TÍTULO -->
 
           <div>
 
@@ -346,12 +1010,7 @@
           </div>
 
 
-          <!-- AÇÕES -->
-
           <div class="section-actions">
-
-
-            <!-- BUSCA -->
 
             <div class="search-box">
 
@@ -368,8 +1027,6 @@
             </div>
 
 
-            <!-- EXCLUIR TODOS -->
-
             <button
               id="delete-all-members"
               class="danger-button"
@@ -378,18 +1035,10 @@
               Excluir todos
             </button>
 
-
           </div>
 
         </div>
 
-
-        <!-- =================================================
-             GRID DOS MEMBROS
-
-             IMPORTANTE:
-             O JavaScript usa exatamente esse ID.
-        ================================================== -->
 
         <div
           id="members-grid"
@@ -399,9 +1048,8 @@
       </section>
 
 
-
       <!-- =================================================
-           ABA ROLETA
+           ROLETA
       ================================================== -->
 
       <section
@@ -427,7 +1075,6 @@
 
 
         <div class="roulette-panel">
-
 
           <div class="roulette-badge">
             ✦ SORTEIO DA COMUNIDADE
@@ -490,9 +1137,48 @@
       </section>
 
 
+      <!-- =================================================
+           PLINKO
+      ================================================== -->
+
+      <section
+        id="plinko-tab"
+        class="tab-content"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <h2>
+              Plinko
+            </h2>
+
+            <p>
+              Sorteio utilizando os membros cadastrados na comunidade.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="plinko-container">
+
+          <iframe
+            src="../plinko_gaucho.html"
+            title="Plinko do Gaúcho"
+            class="plinko-frame"
+            allow="fullscreen"
+          ></iframe>
+
+        </div>
+
+      </section>
+
 
       <!-- =================================================
-           ABA GORJETAS
+           GORJETAS
       ================================================== -->
 
       <section
@@ -502,7 +1188,6 @@
 
         <div class="section-heading">
 
-
           <div>
 
             <h2>
@@ -510,7 +1195,7 @@
             </h2>
 
             <p>
-              Ganhadores registrados pelo painel e pela roleta.
+              Ganhadores registrados pelo painel, roleta e Plinko.
             </p>
 
           </div>
@@ -544,16 +1229,113 @@
   </div>
 
 
-
   <!-- =====================================================
-       JAVASCRIPT
+       OVERLAY CASSINO
   ====================================================== -->
+
+  <div
+    id="tip-casino-overlay"
+    class="casino-overlay"
+    aria-hidden="true"
+  >
+
+    <div
+      id="casino-particles"
+      class="casino-particles"
+    ></div>
+
+
+    <div class="casino-machine">
+
+      <div class="casino-lights">
+
+        <span class="casino-light"></span>
+        <span class="casino-light"></span>
+        <span class="casino-light"></span>
+        <span class="casino-light"></span>
+        <span class="casino-light"></span>
+        <span class="casino-light"></span>
+
+      </div>
+
+
+      <div class="casino-scan"></div>
+
+
+      <div class="casino-brand">
+        ✦ GORJETAS DO GAÚCHO ✦
+      </div>
+
+
+      <h2 class="casino-title">
+        JACKPOT!
+      </h2>
+
+
+      <div class="casino-subtitle">
+        A gorjeta está sendo registrada
+      </div>
+
+
+      <div class="casino-reels">
+
+        <div
+          id="casino-reel-1"
+          class="casino-reel spinning"
+        >
+          🎰
+        </div>
+
+        <div
+          id="casino-reel-2"
+          class="casino-reel spinning"
+        >
+          💰
+        </div>
+
+        <div
+          id="casino-reel-3"
+          class="casino-reel spinning"
+        >
+          7️⃣
+        </div>
+
+      </div>
+
+
+      <div
+        id="casino-amount"
+        class="casino-amount"
+      >
+        R$ 20,00
+      </div>
+
+
+      <div
+        id="casino-member"
+        class="casino-member"
+      >
+        Membro
+      </div>
+
+
+      <div
+        id="casino-status"
+        class="casino-status"
+      >
+        Preparando...
+      </div>
+
+    </div>
+
+  </div>
+
 
   <script
     type="module"
     src="../app.js"
   ></script>
 
-
 </body>
+
 </html>

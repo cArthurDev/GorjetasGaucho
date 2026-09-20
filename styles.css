@@ -87,3 +87,372 @@
 .delete-tip-button:active {
   transform: scale(0.92);
 }
+
+/* =========================
+   PLINKO
+========================= */
+
+.plinko-container {
+  width: 100%;
+  height: calc(100vh - 180px);
+  min-height: 700px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #080808;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.plinko-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+  border: 0;
+  background: #080808;
+}
+
+@media (max-width: 900px) {
+  .plinko-container {
+    height: calc(100vh - 150px);
+    min-height: 600px;
+    border-radius: 14px;
+  }
+
+  .plinko-frame {
+    min-height: 600px;
+  }
+}
+
+#refresh-dashboard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#refresh-icon {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+}
+
+#refresh-dashboard.is-refreshing #refresh-icon {
+  animation: refresh-spin .8s linear infinite;
+}
+
+@keyframes refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#refresh-dashboard:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+/* =====================================================
+   ANIMAÇÃO CASSINO - GORJETA
+====================================================== */
+
+.tip-casino-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255, 193, 7, .18),
+      rgba(0, 0, 0, .94) 55%
+    );
+
+  backdrop-filter: blur(8px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    opacity .25s ease,
+    visibility .25s ease;
+}
+
+.tip-casino-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.casino-content {
+  position: relative;
+  z-index: 5;
+
+  text-align: center;
+
+  transform: scale(.5);
+  opacity: 0;
+
+  animation: none;
+}
+
+.tip-casino-overlay.active .casino-content {
+  animation: casino-pop .65s cubic-bezier(.17,.89,.32,1.35) forwards;
+}
+
+
+/* CHIP */
+
+.casino-chip {
+  width: 150px;
+  height: 150px;
+
+  margin: 0 auto 25px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      #f5c542 0deg 12deg,
+      #8b6410 12deg 24deg
+    );
+
+  box-shadow:
+    0 0 20px rgba(255, 193, 7, .8),
+    0 0 60px rgba(255, 193, 7, .5),
+    0 0 120px rgba(255, 193, 7, .25);
+
+  animation:
+    chip-spin 1s linear infinite,
+    chip-glow 1s ease-in-out infinite alternate;
+}
+
+.chip-inner {
+  width: 108px;
+  height: 108px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle,
+      #f9d85c,
+      #d49a18
+    );
+
+  border: 5px dashed rgba(255,255,255,.85);
+
+  color: #171717;
+
+  font-size: 55px;
+  font-weight: 900;
+
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,.25);
+}
+
+
+/* TEXTO */
+
+.casino-title {
+  font-family: "Space Grotesk", sans-serif;
+
+  font-size: clamp(38px, 7vw, 76px);
+  font-weight: 800;
+
+  letter-spacing: 4px;
+
+  color: #fff;
+
+  text-shadow:
+    0 0 10px rgba(255,255,255,.8),
+    0 0 25px rgba(255,193,7,.9),
+    0 0 50px rgba(255,193,7,.7);
+
+  animation:
+    casino-text-pulse .8s ease-in-out infinite alternate;
+}
+
+.casino-amount {
+  margin-top: 5px;
+
+  font-family: "Space Grotesk", sans-serif;
+
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 800;
+
+  color: #f5c542;
+
+  text-shadow:
+    0 0 15px rgba(255,193,7,.8);
+}
+
+.casino-status {
+  margin-top: 15px;
+
+  font-size: 15px;
+
+  color: rgba(255,255,255,.7);
+
+  letter-spacing: 2px;
+}
+
+
+/* LUZ */
+
+.casino-light {
+  position: absolute;
+
+  width: 500px;
+  height: 500px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,193,7,.18),
+      transparent 65%
+    );
+
+  animation:
+    casino-light 1.2s ease-in-out infinite alternate;
+}
+
+
+/* PARTÍCULAS */
+
+.casino-particle {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #f5c542;
+
+  box-shadow:
+    0 0 10px #f5c542,
+    0 0 20px rgba(255,193,7,.8);
+
+  pointer-events: none;
+
+  animation: particle-explosion 1.4s ease-out forwards;
+}
+
+
+/* ANIMAÇÕES */
+
+@keyframes casino-pop {
+
+  0% {
+    transform: scale(.5);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+}
+
+@keyframes chip-spin {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+@keyframes chip-glow {
+
+  from {
+    filter: brightness(1);
+  }
+
+  to {
+    filter: brightness(1.35);
+  }
+
+}
+
+@keyframes casino-text-pulse {
+
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.04);
+  }
+
+}
+
+@keyframes casino-light {
+
+  from {
+    transform: scale(.8);
+    opacity: .5;
+  }
+
+  to {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+}
+
+@keyframes particle-explosion {
+
+  0% {
+    transform:
+      translate(-50%, -50%)
+      scale(.2);
+
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      translate(
+        calc(-50% + var(--x)),
+        calc(-50% + var(--y))
+      )
+      rotate(720deg)
+      scale(1);
+
+    opacity: 0;
+  }
+
+}
