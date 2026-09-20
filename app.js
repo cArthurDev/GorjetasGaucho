@@ -3276,6 +3276,8 @@ async function spinRoulette() {
 
   const wheel = $('#roulette-wheel');
 
+  let spinFinished = Promise.resolve();
+
 
   try {
 
@@ -3288,19 +3290,30 @@ async function spinRoulette() {
       const landingAngle =
         (360 - ((winnerIndex + .5) * slice)) % 360;
 
+      const finalRotation = (360 * 7) + landingAngle;
+
+      wheel.getAnimations().forEach(
+        (animation) => animation.cancel()
+      );
       wheel.classList.remove('spinning');
-      wheel.style.transition = 'none';
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
-      wheel.style.removeProperty('transform');
-      wheel.style.removeProperty('transition');
-      wheel.style.setProperty(
-        '--wheel-rotation',
-        `${(360 * 7) + landingAngle}deg`
+      const animation = wheel.animate(
+        [
+          { transform: 'rotate(0deg)' },
+          { transform: `rotate(${finalRotation}deg)` }
+        ],
+        {
+          duration: 4100,
+          easing: 'cubic-bezier(.12, .75, .1, 1)',
+          fill: 'forwards'
+        }
       );
 
-      wheel.classList.add('spinning');
+      spinFinished = animation.finished.catch(
+        () => undefined
+      );
 
     }
 
@@ -3314,7 +3327,7 @@ async function spinRoulette() {
 
     `;
 
-    await sleep(4200);
+    await spinFinished;
 
     result.innerHTML = `
 
