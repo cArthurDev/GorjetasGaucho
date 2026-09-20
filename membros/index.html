@@ -4,27 +4,99 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#101010" />
+
     <title>Membros | Gorjetas do Gaúcho</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="../styles.css" />
   </head>
+
   <body class="public-page">
+
     <main class="join-layout">
+
       <section class="join-form-panel">
+
         <div class="form-wrap">
-          <div class="form-brand"><span class="brand-dot"></span> GORJETAS DO GAÚCHO</div>
+
+          <div class="form-brand">
+            <span class="brand-dot"></span>
+            GORJETAS DO GAÚCHO
+          </div>
+
           <form id="member-form">
-            <label>Nome completo<input name="full_name" type="text" placeholder="Digite seu nome" autocomplete="name" required /></label>
-            <label>Telefone<input name="phone" type="tel" placeholder="(00) 00000-0000" autocomplete="tel" required /></label>
-            <label>Nick da Twitch<input name="twitch_nick" type="text" placeholder="Digite seu nick" required /></label>
-            <button class="button button-gold" type="submit">Enviar cadastro <span>→</span></button>
+
+            <label>
+              Nome completo
+
+              <input
+                name="full_name"
+                type="text"
+                placeholder="Digite seu nome"
+                autocomplete="name"
+                maxlength="120"
+                required
+              />
+            </label>
+
+            <label>
+              Telefone
+
+              <input
+                name="phone"
+                id="phone"
+                type="tel"
+                inputmode="numeric"
+                placeholder="(64) 99999-9999"
+                autocomplete="tel"
+                maxlength="15"
+                required
+              />
+            </label>
+
+            <label>
+              Nick da Twitch
+
+              <input
+                name="twitch_nick"
+                type="text"
+                placeholder="Digite seu nick"
+                maxlength="50"
+                required
+              />
+            </label>
+
+            <button
+              class="button button-gold"
+              type="submit"
+            >
+              Enviar cadastro
+              <span>→</span>
+            </button>
+
           </form>
-          <div id="form-feedback" class="feedback" role="status"></div>
+
+          <div
+            id="form-feedback"
+            class="feedback"
+            role="status"
+            aria-live="polite"
+          ></div>
+
         </div>
+
       </section>
+
     </main>
+
     <script type="module" src="../app.js"></script>
+
   </body>
 </html>
