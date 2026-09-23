@@ -1,7 +1,8 @@
 // Vercel Serverless Function: https://gorjetas-gaucho.vercel.app/api/calls
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const CALL_API_TOKEN = process.env.CALL_API_TOKEN;
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ucojydxwmeewbumhzwkq.supabase.co';
+// A publishable key já é pública e está no config.js do site.
+// Use a service role apenas se você ativar RLS para esta tabela no futuro.
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_UG7oOzFrJzXXIHbaW8s6tQ_QE5mFe7p';
 
 function cors(response) {
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,21 +14,17 @@ async function supabase(path, options = {}) {
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
     headers: {
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
       'Content-Type': 'application/json',
       ...(options.headers || {})
     }
   });
 }
 
-export default async function handler(request, response) {
+module.exports = async function handler(request, response) {
   cors(response);
   if (request.method === 'OPTIONS') return response.status(204).end();
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return response.status(500).json({ error: 'Variáveis do Supabase não configuradas na Vercel.' });
-  }
-
   if (request.method === 'GET') {
     const result = await supabase('chat_calls?select=id,usuario,call,created_at&order=created_at.desc');
     if (!result.ok) return response.status(502).json({ error: 'Não foi possível consultar as calls.' });
@@ -43,10 +40,6 @@ export default async function handler(request, response) {
   }
 
   if (request.method !== 'POST') return response.status(405).json({ error: 'Método não permitido.' });
-  if (CALL_API_TOKEN && request.headers.authorization !== `Bearer ${CALL_API_TOKEN}`) {
-    return response.status(401).json({ error: 'Não autorizado.' });
-  }
-
   const usuario = String(request.body?.usuario || '').trim();
   const call = String(request.body?.call || '').trim();
   if (!usuario || !call) return response.status(400).json({ error: 'Os campos "usuario" e "call" são obrigatórios.' });
