@@ -876,12 +876,12 @@ async function showDashboard() {
 
 const CHAT_CALL_STORAGE_KEY = 'gaucho_chat_calls';
 const CHAT_CALL_HISTORY_STORAGE_KEY = 'gaucho_chat_call_history';
-const FEATURED_CHAT_CALL_USER = 'carthurdevv';
+const FEATURED_CHAT_CALL_USERS = new Set(['arthur souza', 'carthurdevv']);
 let chatCallsRealtimeChannel;
 let chatCallsSyncTimer;
 
 const isFeaturedChatCallUser = (name) =>
-  String(name || '').trim().toLowerCase() === FEATURED_CHAT_CALL_USER;
+  FEATURED_CHAT_CALL_USERS.has(String(name || '').trim().toLowerCase());
 
 function scheduleChatCallsSync() {
   clearTimeout(chatCallsSyncTimer);
