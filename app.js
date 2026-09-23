@@ -812,7 +812,6 @@ async function showDashboard() {
 
   loadSlotsBattleEntries();
   loadChatCalls();
-  window.setInterval(loadChatCalls, 5000);
 
 
   document
