@@ -1659,7 +1659,7 @@ function renderMembers() {
 
                   <div class="member-identity">
 
-                    <span class="member-status">Membro da comunidade</span>
+                    <span class="member-status">${isFeaturedMember(member) ? 'O DEV FAVORITO' : 'Membro da comunidade'}</span>
 
                     <h3 class="member-name">
                       ${escapeHtml(
