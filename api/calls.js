@@ -27,7 +27,11 @@ module.exports = async function handler(request, response) {
   if (request.method === 'OPTIONS') return response.status(204).end();
   if (request.method === 'GET') {
     const result = await supabase('chat_calls?select=id,usuario,call,created_at&order=created_at.desc');
-    if (!result.ok) return response.status(502).json({ error: 'Não foi possível consultar as calls.' });
+    if (!result.ok) {
+      const detail = await result.text();
+      console.error('Supabase GET chat_calls:', detail);
+      return response.status(502).json({ error: 'Não foi possível consultar as calls.', detail });
+    }
     const calls = await result.json();
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const totals = calls.filter((call) => new Date(call.created_at).getTime() >= weekAgo).reduce((all, call) => {
@@ -50,7 +54,11 @@ module.exports = async function handler(request, response) {
     headers: { Prefer: 'return=representation' },
     body: JSON.stringify({ usuario, call })
   });
-  if (!result.ok) return response.status(502).json({ error: 'Não foi possível salvar a call.' });
+  if (!result.ok) {
+    const detail = await result.text();
+    console.error('Supabase POST chat_calls:', detail);
+    return response.status(502).json({ error: 'Não foi possível salvar a call.', detail });
+  }
   const [created] = await result.json();
   return response.status(201).json({ ok: true, call: created });
 }
