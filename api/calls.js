@@ -35,14 +35,15 @@ module.exports = async function handler(request, response) {
     }
     const calls = await result.json();
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const completedResult = await supabase(`chat_calls?select=usuario,bonus_amount&completed_at=gte.${encodeURIComponent(weekAgo)}`);
+    const completedResult = await supabase(`chat_calls?select=id,usuario,bonus_amount,completed_at&completed_at=gte.${encodeURIComponent(weekAgo)}&order=completed_at.desc`);
     if (!completedResult.ok) return response.status(502).json({ error: 'Nao foi possivel consultar os bonus concluidos.' });
     const completedCalls = await completedResult.json();
     const totals = completedCalls.reduce((all, call) => {
-      all[call.usuario] = (all[call.usuario] || 0) + Number(call.bonus_amount || 0);
+      if (!all[call.usuario]) all[call.usuario] = { totalBonus: 0, latestId: call.id };
+      all[call.usuario].totalBonus += Number(call.bonus_amount || 0);
       return all;
     }, {});
-    const ranking = Object.entries(totals).map(([usuario, totalBonus]) => ({ usuario, totalBonus }))
+    const ranking = Object.entries(totals).map(([usuario, entry]) => ({ usuario, ...entry }))
       .sort((a, b) => b.totalBonus - a.totalBonus || a.usuario.localeCompare(b.usuario)).slice(0, 5);
     return response.status(200).json({ calls, ranking });
   }

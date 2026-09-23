@@ -861,6 +861,7 @@ async function showDashboard() {
   });
   $('#chat-call-form')?.addEventListener('submit', addChatCall);
   $('#chat-call-list')?.addEventListener('click', handleChatCallAction);
+  $('#chat-call-ranking')?.addEventListener('click', handleChatCallRankingAction);
 
 
   await loadData();
@@ -964,12 +965,31 @@ function renderChatCalls() {
       return total;
     }, {});
   const leaders = state.chatCallRanking
-    ? state.chatCallRanking.map((entry) => [entry.usuario, entry.totalBonus])
-    : Object.entries(ranking).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    ? state.chatCallRanking
+    : Object.entries(ranking).sort((a, b) => b[1] - a[1]).slice(0, 5)
+      .map(([usuario, totalBonus]) => ({ usuario, totalBonus }));
   const rankingElement = $('#chat-call-ranking');
   if (rankingElement) rankingElement.innerHTML = leaders.length
-    ? leaders.map(([name, total], index) => `<div class="chat-call-rank ${index < 3 ? `podium place-${index + 1}` : 'other-place'}"><b>${index + 1}</b><span>${escapeHtml(name)}</span><small>R$ ${Number(total).toFixed(2).replace('.', ',')}</small></div>`).join('')
+    ? leaders.map((entry, index) => `<div class="chat-call-rank ${index < 3 ? `podium place-${index + 1}` : 'other-place'}"><b>${index + 1}</b><span>${escapeHtml(entry.usuario)}</span><small>R$ ${Number(entry.totalBonus).toFixed(2).replace('.', ',')}</small>${entry.latestId ? `<button class="chat-call-ranking-remove" type="button" data-chat-call-ranking-id="${entry.latestId}" data-chat-call-ranking-name="${escapeHtml(entry.usuario)}" title="Excluir a última call concluída desta pessoa">Excluir</button>` : ''}</div>`).join('')
     : '<p class="chat-call-no-ranking">Sem chamadas concluídas nesta semana.</p>';
+}
+
+async function handleChatCallRankingAction(event) {
+  const button = event.target.closest('[data-chat-call-ranking-id]');
+  if (!button || !CALLS_API_URL) return;
+
+  const name = button.dataset.chatCallRankingName;
+  if (!window.confirm(`Excluir a última call concluída de ${name}? O valor será removido do Top 5.`)) return;
+
+  try {
+    button.disabled = true;
+    const response = await fetch(`${CALLS_API_URL}?id=${encodeURIComponent(button.dataset.chatCallRankingId)}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Não foi possível excluir a call concluída.');
+    loadChatCalls();
+  } catch (error) {
+    button.disabled = false;
+    showDashboardMessage(error.message, 'error');
+  }
 }
 
 async function addChatCall(event) {

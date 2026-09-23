@@ -21,7 +21,8 @@ begin
   alter publication supabase_realtime add table public.chat_calls;
 exception
   when duplicate_object then null;
-end;
+end
+$$;
 
 -- A API atual usa a chave pública do projeto; permita a leitura e a criação
 -- de calls. Não há UPDATE ou DELETE liberados.
