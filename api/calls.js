@@ -7,7 +7,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 function cors(response) {
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
 }
 
 async function supabase(path, options = {}) {
@@ -41,6 +41,21 @@ module.exports = async function handler(request, response) {
     const ranking = Object.entries(totals).map(([usuario, total]) => ({ usuario, total }))
       .sort((a, b) => b.total - a.total || a.usuario.localeCompare(b.usuario)).slice(0, 5);
     return response.status(200).json({ calls, ranking });
+  }
+
+  if (request.method === 'DELETE') {
+    const id = String(request.query?.id || '').trim();
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return response.status(400).json({ error: 'ID de call inválido.' });
+    const result = await supabase(`chat_calls?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=representation' }
+    });
+    if (!result.ok) {
+      const detail = await result.text();
+      console.error('Supabase DELETE chat_calls:', detail);
+      return response.status(502).json({ error: 'Não foi possível excluir a call.', detail });
+    }
+    return response.status(200).json({ ok: true });
   }
 
   if (request.method !== 'POST') return response.status(405).json({ error: 'Método não permitido.' });

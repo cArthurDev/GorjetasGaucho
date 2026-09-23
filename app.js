@@ -962,12 +962,22 @@ function addChatCall(event) {
   renderChatCalls();
 }
 
-function handleChatCallAction(event) {
+async function handleChatCallAction(event) {
   const button = event.target.closest('[data-chat-call-action]');
   if (!button) return;
   const id = button.dataset.chatCallId;
   const call = state.chatCalls.find((entry) => entry.id === id);
   if (!call) return;
+
+  if (button.dataset.chatCallAction === 'remove' && CALLS_API_URL) {
+    try {
+      const response = await fetch(`${CALLS_API_URL}?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Não foi possível excluir a chamada.');
+    } catch (error) {
+      showDashboardMessage(error.message, 'error');
+      return;
+    }
+  }
 
   if (button.dataset.chatCallAction === 'complete') {
     state.chatCallHistory.push({ name: call.name, completedAt: Date.now() });

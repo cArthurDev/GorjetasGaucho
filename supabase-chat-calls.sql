@@ -7,3 +7,28 @@ create table if not exists public.chat_calls (
 );
 
 create index if not exists chat_calls_created_at_idx on public.chat_calls (created_at desc);
+
+-- A API atual usa a chave pública do projeto; permita a leitura e a criação
+-- de calls. Não há UPDATE ou DELETE liberados.
+alter table public.chat_calls enable row level security;
+
+drop policy if exists "chat_calls_public_select" on public.chat_calls;
+create policy "chat_calls_public_select"
+on public.chat_calls
+for select
+to anon
+using (true);
+
+drop policy if exists "chat_calls_public_insert" on public.chat_calls;
+create policy "chat_calls_public_insert"
+on public.chat_calls
+for insert
+to anon
+with check (true);
+
+drop policy if exists "chat_calls_public_delete" on public.chat_calls;
+create policy "chat_calls_public_delete"
+on public.chat_calls
+for delete
+to anon
+using (true);
