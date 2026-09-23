@@ -7,7 +7,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 function cors(response) {
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
 }
 
 async function supabase(path, options = {}) {
@@ -26,20 +26,24 @@ module.exports = async function handler(request, response) {
   cors(response);
   if (request.method === 'OPTIONS') return response.status(204).end();
   if (request.method === 'GET') {
-    const result = await supabase('chat_calls?select=id,usuario,call,created_at&order=created_at.desc');
+    // Mantém a fila em ordem de chegada: a primeira call fica no topo.
+    const result = await supabase('chat_calls?select=id,usuario,call,created_at&completed_at=is.null&order=created_at.asc');
     if (!result.ok) {
       const detail = await result.text();
       console.error('Supabase GET chat_calls:', detail);
       return response.status(502).json({ error: 'Não foi possível consultar as calls.', detail });
     }
     const calls = await result.json();
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const totals = calls.filter((call) => new Date(call.created_at).getTime() >= weekAgo).reduce((all, call) => {
-      all[call.usuario] = (all[call.usuario] || 0) + 1;
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const completedResult = await supabase(`chat_calls?select=usuario,bonus_amount&completed_at=gte.${encodeURIComponent(weekAgo)}`);
+    if (!completedResult.ok) return response.status(502).json({ error: 'Nao foi possivel consultar os bonus concluidos.' });
+    const completedCalls = await completedResult.json();
+    const totals = completedCalls.reduce((all, call) => {
+      all[call.usuario] = (all[call.usuario] || 0) + Number(call.bonus_amount || 0);
       return all;
     }, {});
-    const ranking = Object.entries(totals).map(([usuario, total]) => ({ usuario, total }))
-      .sort((a, b) => b.total - a.total || a.usuario.localeCompare(b.usuario)).slice(0, 5);
+    const ranking = Object.entries(totals).map(([usuario, totalBonus]) => ({ usuario, totalBonus }))
+      .sort((a, b) => b.totalBonus - a.totalBonus || a.usuario.localeCompare(b.usuario)).slice(0, 5);
     return response.status(200).json({ calls, ranking });
   }
 
@@ -56,6 +60,20 @@ module.exports = async function handler(request, response) {
       return response.status(502).json({ error: 'Não foi possível excluir a call.', detail });
     }
     return response.status(200).json({ ok: true });
+  }
+
+  if (request.method === 'PATCH') {
+    const id = String(request.body?.id || '').trim();
+    const bonusAmount = Number(request.body?.bonusAmount);
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return response.status(400).json({ error: 'ID de call invalido.' });
+    if (!Number.isFinite(bonusAmount) || bonusAmount <= 0) return response.status(400).json({ error: 'Informe um valor de bonus maior que zero.' });
+    const result = await supabase(`chat_calls?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ bonus_amount: bonusAmount, completed_at: new Date().toISOString() })
+    });
+    if (!result.ok) return response.status(502).json({ error: 'Nao foi possivel concluir a call.' });
+    return response.status(200).json({ ok: true, call: (await result.json())[0] });
   }
 
   if (request.method !== 'POST') return response.status(405).json({ error: 'Método não permitido.' });

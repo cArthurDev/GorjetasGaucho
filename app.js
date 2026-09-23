@@ -937,25 +937,41 @@ function renderChatCalls() {
   const ranking = state.chatCallHistory
     .filter((entry) => Date.now() - entry.completedAt < 7 * 24 * 60 * 60 * 1000)
     .reduce((total, entry) => {
-      total[entry.name] = (total[entry.name] || 0) + 1;
+      total[entry.name] = (total[entry.name] || 0) + Number(entry.bonusAmount || 0);
       return total;
     }, {});
   const leaders = state.chatCallRanking
-    ? state.chatCallRanking.map((entry) => [entry.usuario, entry.total])
+    ? state.chatCallRanking.map((entry) => [entry.usuario, entry.totalBonus])
     : Object.entries(ranking).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const rankingElement = $('#chat-call-ranking');
   if (rankingElement) rankingElement.innerHTML = leaders.length
-    ? leaders.map(([name, total], index) => `<div class="chat-call-rank"><b>${index + 1}</b><span>${escapeHtml(name)}</span><small>${total} ${total === 1 ? 'call' : 'calls'}</small></div>`).join('')
+    ? leaders.map(([name, total], index) => `<div class="chat-call-rank"><b>${index + 1}</b><span>${escapeHtml(name)}</span><small>R$ ${Number(total).toFixed(2).replace('.', ',')}</small></div>`).join('')
     : '<p class="chat-call-no-ranking">Sem chamadas concluídas nesta semana.</p>';
 }
 
-function addChatCall(event) {
+async function addChatCall(event) {
   event.preventDefault();
   const name = $('#chat-call-name')?.value.trim();
   const game = $('#chat-call-game')?.value.trim();
   if (!name || !game) return;
 
-  state.chatCalls.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, game });
+  let entry = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, game };
+  if (CALLS_API_URL) {
+    try {
+      const response = await fetch(CALLS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: name, call: game })
+      });
+      if (!response.ok) throw new Error('Não foi possível salvar a chamada.');
+      const data = await response.json();
+      entry = { id: data.call.id, name: data.call.usuario, game: data.call.call };
+    } catch (error) {
+      showDashboardMessage(error.message, 'error');
+      return;
+    }
+  }
+  state.chatCalls.push(entry);
   saveChatCalls();
   event.currentTarget.reset();
   renderChatCalls();
@@ -984,7 +1000,33 @@ async function handleChatCallAction(event) {
   }
 
   if (button.dataset.chatCallAction === 'complete') {
-    state.chatCallHistory.push({ name: call.name, completedAt: Date.now() });
+    const value = window.prompt(`Qual valor de bônus ${call.name} pagou?`, '');
+    if (value === null) return;
+    const bonusAmount = Number(value.replace(',', '.'));
+    if (!Number.isFinite(bonusAmount) || bonusAmount <= 0) {
+      showDashboardMessage('Informe um valor de bônus maior que zero.', 'error');
+      return;
+    }
+    if (CALLS_API_URL) {
+      try {
+        button.disabled = true;
+        const response = await fetch(CALLS_API_URL, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, bonusAmount })
+        });
+        if (!response.ok) throw new Error('Não foi possível concluir a chamada.');
+        state.chatCalls = state.chatCalls.filter((entry) => entry.id !== id);
+        saveChatCalls();
+        loadChatCalls();
+        return;
+      } catch (error) {
+        button.disabled = false;
+        showDashboardMessage(error.message, 'error');
+        return;
+      }
+    }
+    state.chatCallHistory.push({ name: call.name, bonusAmount, completedAt: Date.now() });
   }
   state.chatCalls = state.chatCalls.filter((entry) => entry.id !== id);
   saveChatCalls();
