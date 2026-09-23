@@ -899,6 +899,49 @@
     @media (max-width: 800px) { .slots-setup { grid-template-columns: 1fr 1fr; } .slots-setup .slots-button { width: 100%; } }
     @media (max-width: 480px) { .slots-setup { grid-template-columns: 1fr; } .slots-bracket { grid-template-columns: repeat(4, 190px); } }
 
+    /* Call do Chat */
+    .chat-call { max-width: 1180px; margin: 0 auto; }
+    .chat-call-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+    .chat-call-heading { display: flex; align-items: center; gap: 13px; margin-bottom: 18px; }
+    .chat-call-heading-icon, .chat-call-card-icon { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(241, 190, 53, .45); border-radius: 11px; color: #ffd86b; background: linear-gradient(135deg, #5c3907, #201505); box-shadow: inset 0 0 14px rgba(255, 203, 62, .12); font-size: 18px; }
+    .chat-call-heading h2, .chat-call-panel-title { margin: 0; color: #f7f0df; font: 700 20px 'Space Grotesk', sans-serif; letter-spacing: -.5px; }
+    .chat-call-heading p { margin: 4px 0 0; color: #a89f8d; font-size: 12px; }
+    .chat-call-count { margin-left: auto; border: 1px solid rgba(239, 188, 50, .38); border-radius: 9px; padding: 7px 11px; color: #f5d369; background: rgba(113, 71, 7, .22); font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+    .chat-call-list, .chat-call-side-card { border: 1px solid rgba(222, 170, 40, .28); border-radius: 14px; background: radial-gradient(circle at 100% 0%, rgba(217, 159, 26, .12), transparent 38%), linear-gradient(145deg, #282117, #16130e); box-shadow: 0 15px 34px rgba(0, 0, 0, .22), 0 0 24px rgba(209, 151, 18, .06); }
+    .chat-call-list { overflow: hidden; }
+    .chat-call-empty { padding: 48px 22px; color: #8e8779; font-size: 13px; text-align: center; }
+    .chat-call-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 13px; align-items: center; padding: 14px 17px; border-bottom: 1px solid rgba(232, 220, 183, .09); }
+    .chat-call-item:last-child { border-bottom: 0; }
+    .chat-call-position { display: grid; width: 31px; height: 31px; place-items: center; border: 1px solid rgba(232, 185, 62, .3); border-radius: 50%; color: #e8c765; background: #2c210e; font-size: 12px; font-weight: 800; }
+    .chat-call-person { min-width: 0; }
+    .chat-call-person strong { display: block; overflow: hidden; color: #f5f0e5; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-call-person span { display: block; overflow: hidden; margin-top: 3px; color: #aaa18f; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-call-actions { display: flex; gap: 7px; }
+    .chat-call-action { border: 1px solid rgba(235, 190, 70, .3); border-radius: 7px; padding: 8px 10px; color: #f1d275; background: rgba(174, 112, 10, .1); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .chat-call-action:hover { background: rgba(201, 142, 23, .25); }
+    .chat-call-action.remove { border-color: rgba(223, 115, 72, .35); color: #e59670; background: rgba(127, 39, 16, .13); }
+    .chat-call-side { display: grid; gap: 18px; }
+    .chat-call-side-card { padding: 19px; }
+    .chat-call-card-title { display: flex; align-items: center; gap: 9px; margin-bottom: 17px; }
+    .chat-call-card-icon { width: 31px; height: 31px; border-radius: 9px; font-size: 14px; }
+    .chat-call-panel-title { font-size: 14px; letter-spacing: .2px; text-transform: uppercase; }
+    .chat-call-field { display: grid; gap: 7px; margin-bottom: 13px; color: #b7ad99; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    .chat-call-field input { height: 39px; border: 1px solid #403725; border-radius: 7px; padding: 0 11px; color: #f8f1df; background: #211b12; font-size: 12px; }
+    .chat-call-field input:focus { border-color: #d9a626; }
+    .chat-call-submit { width: 100%; border: 0; border-radius: 7px; padding: 12px; color: #281804; background: linear-gradient(135deg, #a86908, #e2ae29 54%, #ffd968); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .chat-call-submit:hover { filter: brightness(1.1); }
+    .chat-call-ranking-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+    .chat-call-ranking-head span { color: #b7a989; font-size: 9px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+    .chat-call-ranking { display: grid; gap: 8px; }
+    .chat-call-rank { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid rgba(232, 220, 183, .08); }
+    .chat-call-rank:last-child { border-bottom: 0; }
+    .chat-call-rank b { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: #211704; background: #ddb344; font-size: 10px; }
+    .chat-call-rank span { min-width: 0; overflow: hidden; color: #eee6d5; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-call-rank small { margin-left: auto; color: #d7b65c; font-size: 10px; font-weight: 800; }
+    .chat-call-no-ranking { margin: 5px 0 0; color: #938b7d; font-size: 11px; }
+    @media (max-width: 900px) { .chat-call-layout { grid-template-columns: 1fr; } .chat-call-side { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .chat-call-side { grid-template-columns: 1fr; } .chat-call-item { grid-template-columns: auto minmax(0, 1fr); } .chat-call-actions { grid-column: 1 / -1; } .chat-call-action { flex: 1; } }
+
   </style>
 
 </head>
@@ -1093,6 +1136,12 @@
           <span class="nav-icon">🏎</span>
           Corrida Gaúcha
           <b>↗</b>
+        </button>
+
+        <button class="nav-item" data-tab="chat-call" type="button">
+          <span class="nav-icon">☎</span>
+          Call do Chat
+          <b id="nav-chat-call-count">0</b>
         </button>
 
         <button
@@ -1322,6 +1371,35 @@
       <section id="race-tab" class="tab-content">
         <div class="plinko-container">
           <iframe src="../corrida_gaucha.html" title="Corrida Gaúcha" class="plinko-frame" allow="fullscreen"></iframe>
+        </div>
+      </section>
+
+      <section id="chat-call-tab" class="tab-content">
+        <div class="chat-call">
+          <div class="chat-call-layout">
+            <div>
+              <div class="chat-call-heading">
+                <div class="chat-call-heading-icon">☎</div>
+                <div><h2>Chamadas ativas</h2><p>Organize as chamadas recebidas pelo chat.</p></div>
+                <span id="chat-call-count" class="chat-call-count">0 chamadas</span>
+              </div>
+              <div id="chat-call-list" class="chat-call-list"></div>
+            </div>
+            <aside class="chat-call-side">
+              <div class="chat-call-side-card">
+                <div class="chat-call-card-title"><div class="chat-call-card-icon">＋</div><h3 class="chat-call-panel-title">Nova chamada</h3></div>
+                <form id="chat-call-form">
+                  <label class="chat-call-field" for="chat-call-name"><span>Nome da pessoa</span><input id="chat-call-name" maxlength="60" required placeholder="Ex.: Maria123" /></label>
+                  <label class="chat-call-field" for="chat-call-game"><span>Nome do jogo</span><input id="chat-call-game" maxlength="80" required placeholder="Ex.: Sweet Bonanza" /></label>
+                  <button class="chat-call-submit" type="submit">＋ Adicionar chamada</button>
+                </form>
+              </div>
+              <div class="chat-call-side-card">
+                <div class="chat-call-ranking-head"><div class="chat-call-card-title"><div class="chat-call-card-icon">★</div><h3 class="chat-call-panel-title">Top 5 da semana</h3></div><span>Concluídas</span></div>
+                <div id="chat-call-ranking" class="chat-call-ranking"></div>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
 

@@ -6,7 +6,8 @@ import {
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY,
   ADMIN_USER,
-  ADMIN_PASSWORD
+  ADMIN_PASSWORD,
+  CALLS_API_URL
 } from './config.js';
 
 
@@ -39,6 +40,9 @@ const state = {
   slotsBattleSize: 16,
   slotsBattleGenerated: false,
   slotsBattleWinners: {},
+  chatCalls: [],
+  chatCallHistory: [],
+  chatCallRanking: null,
   filter: '',
   loading: false,
   tipLoading: false
@@ -807,6 +811,8 @@ async function showDashboard() {
     true;
 
   loadSlotsBattleEntries();
+  loadChatCalls();
+  window.setInterval(loadChatCalls, 5000);
 
 
   document
@@ -854,10 +860,121 @@ async function showDashboard() {
   $('#slots-name')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') addSlotsBattleEntry();
   });
+  $('#chat-call-form')?.addEventListener('submit', addChatCall);
+  $('#chat-call-list')?.addEventListener('click', handleChatCallAction);
 
 
   await loadData();
 
+}
+
+
+/* =========================================================
+   CALL DO CHAT
+========================================================= */
+
+const CHAT_CALL_STORAGE_KEY = 'gaucho_chat_calls';
+const CHAT_CALL_HISTORY_STORAGE_KEY = 'gaucho_chat_call_history';
+
+function loadChatCalls() {
+  try {
+    state.chatCalls = JSON.parse(localStorage.getItem(CHAT_CALL_STORAGE_KEY) || '[]');
+    state.chatCallHistory = JSON.parse(localStorage.getItem(CHAT_CALL_HISTORY_STORAGE_KEY) || '[]');
+  } catch {
+    state.chatCalls = [];
+    state.chatCallHistory = [];
+  }
+
+  renderChatCalls();
+
+  if (!CALLS_API_URL) return;
+  fetch(CALLS_API_URL)
+    .then((response) => {
+      if (!response.ok) throw new Error('Falha ao carregar calls');
+      return response.json();
+    })
+    .then((data) => {
+      state.chatCalls = (data.calls || []).map((call) => ({
+        id: call.id,
+        name: call.usuario,
+        game: call.call
+      }));
+      state.chatCallRanking = Array.isArray(data.ranking) ? data.ranking : [];
+      renderChatCalls();
+    })
+    .catch(() => {
+      // A tela continua operando com as chamadas salvas localmente se a API estiver indisponível.
+    });
+}
+
+function saveChatCalls() {
+  localStorage.setItem(CHAT_CALL_STORAGE_KEY, JSON.stringify(state.chatCalls));
+  localStorage.setItem(CHAT_CALL_HISTORY_STORAGE_KEY, JSON.stringify(state.chatCallHistory));
+}
+
+function renderChatCalls() {
+  const list = $('#chat-call-list');
+  const count = state.chatCalls.length;
+  const countLabel = `${count} ${count === 1 ? 'chamada' : 'chamadas'}`;
+
+  if ($('#chat-call-count')) $('#chat-call-count').textContent = countLabel;
+  if ($('#nav-chat-call-count')) $('#nav-chat-call-count').textContent = count;
+  if (!list) return;
+
+  if (!count) {
+    list.innerHTML = '<div class="chat-call-empty">Nenhuma chamada ativa. Adicione a primeira pelo formulário ao lado.</div>';
+  } else {
+    list.innerHTML = state.chatCalls.map((call, index) => `
+      <article class="chat-call-item">
+        <span class="chat-call-position">${index + 1}</span>
+        <div class="chat-call-person"><strong>${escapeHtml(call.name)}</strong><span>${escapeHtml(call.game)}</span></div>
+        <div class="chat-call-actions">
+          <button class="chat-call-action" type="button" data-chat-call-action="complete" data-chat-call-id="${call.id}">Concluir</button>
+          <button class="chat-call-action remove" type="button" data-chat-call-action="remove" data-chat-call-id="${call.id}">Excluir</button>
+        </div>
+      </article>`).join('');
+  }
+
+  const ranking = state.chatCallHistory
+    .filter((entry) => Date.now() - entry.completedAt < 7 * 24 * 60 * 60 * 1000)
+    .reduce((total, entry) => {
+      total[entry.name] = (total[entry.name] || 0) + 1;
+      return total;
+    }, {});
+  const leaders = state.chatCallRanking
+    ? state.chatCallRanking.map((entry) => [entry.usuario, entry.total])
+    : Object.entries(ranking).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const rankingElement = $('#chat-call-ranking');
+  if (rankingElement) rankingElement.innerHTML = leaders.length
+    ? leaders.map(([name, total], index) => `<div class="chat-call-rank"><b>${index + 1}</b><span>${escapeHtml(name)}</span><small>${total} ${total === 1 ? 'call' : 'calls'}</small></div>`).join('')
+    : '<p class="chat-call-no-ranking">Sem chamadas concluídas nesta semana.</p>';
+}
+
+function addChatCall(event) {
+  event.preventDefault();
+  const name = $('#chat-call-name')?.value.trim();
+  const game = $('#chat-call-game')?.value.trim();
+  if (!name || !game) return;
+
+  state.chatCalls.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name, game });
+  saveChatCalls();
+  event.currentTarget.reset();
+  renderChatCalls();
+}
+
+function handleChatCallAction(event) {
+  const button = event.target.closest('[data-chat-call-action]');
+  if (!button) return;
+  const id = button.dataset.chatCallId;
+  const call = state.chatCalls.find((entry) => entry.id === id);
+  if (!call) return;
+
+  if (button.dataset.chatCallAction === 'complete') {
+    state.chatCallHistory.push({ name: call.name, completedAt: Date.now() });
+  }
+  state.chatCalls = state.chatCalls.filter((entry) => entry.id !== id);
+  saveChatCalls();
+  renderChatCalls();
 }
 
 
@@ -2271,6 +2388,15 @@ function switchTab(
 
     title =
       'Corrida Gaúcha';
+
+  }
+
+  if (
+    tab === 'chat-call'
+  ) {
+
+    title =
+      'Call do Chat';
 
   }
 
