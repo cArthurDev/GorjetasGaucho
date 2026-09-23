@@ -1029,6 +1029,9 @@ async function refreshDashboard() {
     const success =
       await loadData();
 
+    // Atualiza as chamadas somente quando o botão global for acionado.
+    loadChatCalls();
+
 
     if (success) {
 
