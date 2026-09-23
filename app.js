@@ -972,6 +972,11 @@ async function handleChatCallAction(event) {
     try {
       const response = await fetch(`${CALLS_API_URL}?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Não foi possível excluir a chamada.');
+      state.chatCalls = state.chatCalls.filter((entry) => entry.id !== id);
+      saveChatCalls();
+      renderChatCalls();
+      loadChatCalls();
+      return;
     } catch (error) {
       showDashboardMessage(error.message, 'error');
       return;
