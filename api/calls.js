@@ -80,13 +80,21 @@ module.exports = async function handler(request, response) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'Método não permitido.' });
   const usuario = String(request.body?.usuario || '').trim();
   const call = String(request.body?.call || '').trim();
+  const hasBonusAmount = request.body?.bonusAmount !== undefined;
+  const bonusAmount = hasBonusAmount ? Number(request.body.bonusAmount) : null;
   if (!usuario || !call) return response.status(400).json({ error: 'Os campos "usuario" e "call" são obrigatórios.' });
   if (usuario.length > 60 || call.length > 80) return response.status(400).json({ error: 'Nome ou call excede o tamanho permitido.' });
+
+  if (hasBonusAmount && (!Number.isFinite(bonusAmount) || bonusAmount <= 0)) return response.status(400).json({ error: 'Informe um valor de bonus maior que zero.' });
 
   const result = await supabase('chat_calls', {
     method: 'POST',
     headers: { Prefer: 'return=representation' },
-    body: JSON.stringify({ usuario, call })
+    body: JSON.stringify({
+      usuario,
+      call,
+      ...(hasBonusAmount ? { bonus_amount: bonusAmount, completed_at: new Date().toISOString() } : {})
+    })
   });
   if (!result.ok) {
     const detail = await result.text();

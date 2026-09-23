@@ -860,6 +860,7 @@ async function showDashboard() {
     if (event.key === 'Enter') addSlotsBattleEntry();
   });
   $('#chat-call-form')?.addEventListener('submit', addChatCall);
+  $('#chat-call-bonus-form')?.addEventListener('submit', addChatCallBonus);
   $('#chat-call-list')?.addEventListener('click', handleChatCallAction);
   $('#chat-call-ranking')?.addEventListener('click', handleChatCallRankingAction);
 
@@ -875,8 +876,12 @@ async function showDashboard() {
 
 const CHAT_CALL_STORAGE_KEY = 'gaucho_chat_calls';
 const CHAT_CALL_HISTORY_STORAGE_KEY = 'gaucho_chat_call_history';
+const FEATURED_CHAT_CALL_USER = 'carthurdevv';
 let chatCallsRealtimeChannel;
 let chatCallsSyncTimer;
+
+const isFeaturedChatCallUser = (name) =>
+  String(name || '').trim().toLowerCase() === FEATURED_CHAT_CALL_USER;
 
 function scheduleChatCallsSync() {
   clearTimeout(chatCallsSyncTimer);
@@ -948,7 +953,7 @@ function renderChatCalls() {
     list.innerHTML = '<div class="chat-call-empty">Nenhuma chamada ativa. Adicione a primeira pelo formulário ao lado.</div>';
   } else {
     list.innerHTML = state.chatCalls.map((call, index) => `
-      <article class="chat-call-item">
+      <article class="chat-call-item${isFeaturedChatCallUser(call.name) ? ' featured-user' : ''}">
         <span class="chat-call-position">${index + 1}</span>
         <div class="chat-call-person"><strong>${escapeHtml(call.name)}</strong><span>${escapeHtml(call.game)}</span></div>
         <div class="chat-call-actions">
@@ -970,7 +975,7 @@ function renderChatCalls() {
       .map(([usuario, totalBonus]) => ({ usuario, totalBonus }));
   const rankingElement = $('#chat-call-ranking');
   if (rankingElement) rankingElement.innerHTML = leaders.length
-    ? leaders.map((entry, index) => `<div class="chat-call-rank ${index < 3 ? `podium place-${index + 1}` : 'other-place'}"><b>${index + 1}</b><span>${escapeHtml(entry.usuario)}</span><small>R$ ${Number(entry.totalBonus).toFixed(2).replace('.', ',')}</small>${entry.latestId ? `<button class="chat-call-ranking-remove" type="button" data-chat-call-ranking-id="${entry.latestId}" data-chat-call-ranking-name="${escapeHtml(entry.usuario)}" title="Excluir a última call concluída desta pessoa">Excluir</button>` : ''}</div>`).join('')
+    ? leaders.map((entry, index) => `<div class="chat-call-rank ${index < 3 ? `podium place-${index + 1}` : 'other-place'}${isFeaturedChatCallUser(entry.usuario) ? ' featured-user' : ''}"><b>${index + 1}</b><span>${escapeHtml(entry.usuario)}</span><small>R$ ${Number(entry.totalBonus).toFixed(2).replace('.', ',')}</small>${entry.latestId ? `<button class="chat-call-ranking-remove" type="button" data-chat-call-ranking-id="${entry.latestId}" data-chat-call-ranking-name="${escapeHtml(entry.usuario)}" title="Excluir a última call concluída desta pessoa">Excluir</button>` : ''}</div>`).join('')
     : '<p class="chat-call-no-ranking">Sem chamadas concluídas nesta semana.</p>';
 }
 
@@ -1018,6 +1023,29 @@ async function addChatCall(event) {
   saveChatCalls();
   event.currentTarget.reset();
   renderChatCalls();
+}
+
+async function addChatCallBonus(event) {
+  event.preventDefault();
+  const name = $('#chat-call-bonus-name')?.value.trim();
+  const bonusAmount = Number($('#chat-call-bonus-amount')?.value.replace(',', '.'));
+  if (!name || !Number.isFinite(bonusAmount) || bonusAmount <= 0) {
+    showDashboardMessage('Informe o nome e um valor de bônus maior que zero.', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(CALLS_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario: name, call: 'Bônus manual', bonusAmount })
+    });
+    if (!response.ok) throw new Error('Não foi possível adicionar o bônus.');
+    event.currentTarget.reset();
+    loadChatCalls();
+  } catch (error) {
+    showDashboardMessage(error.message, 'error');
+  }
 }
 
 async function handleChatCallAction(event) {
