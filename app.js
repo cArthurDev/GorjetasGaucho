@@ -883,6 +883,7 @@ async function showDashboard() {
 const CHAT_CALL_STORAGE_KEY = 'gaucho_chat_calls';
 const CHAT_CALL_HISTORY_STORAGE_KEY = 'gaucho_chat_call_history';
 const FEATURED_CHAT_CALL_USERS = new Set(['arthur souza', 'carthurdevv']);
+const RED_FEATURED_MEMBER_USERS = new Set(['lucaskekznsi']);
 let chatCallsRealtimeChannel;
 let chatCallsSyncTimer;
 
@@ -892,6 +893,9 @@ const isFeaturedChatCallUser = (name) =>
 const isFeaturedMember = (member) =>
   isFeaturedChatCallUser(member?.full_name) ||
   isFeaturedChatCallUser(member?.twitch_nick);
+
+const isRedFeaturedMember = (member) =>
+  RED_FEATURED_MEMBER_USERS.has(String(member?.twitch_nick || '').trim().toLowerCase());
 
 function scheduleChatCallsSync() {
   clearTimeout(chatCallsSyncTimer);
@@ -1649,7 +1653,7 @@ function renderMembers() {
           .map(
             (member) => `
 
-              <article class="member-card${isFeaturedMember(member) ? ' featured-member' : ''}">
+              <article class="member-card${isFeaturedMember(member) ? ' featured-member' : ''}${isRedFeaturedMember(member) ? ' featured-member-red' : ''}">
 
                 <div class="member-top">
 
