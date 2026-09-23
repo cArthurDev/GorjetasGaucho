@@ -938,6 +938,19 @@
     .chat-call-rank b { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: #211704; background: #ddb344; font-size: 10px; }
     .chat-call-rank span { min-width: 0; overflow: hidden; color: #eee6d5; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
     .chat-call-rank small { margin-left: auto; color: #d7b65c; font-size: 10px; font-weight: 800; }
+    .chat-call-rank.podium { border: 1px solid rgba(232, 220, 183, .16); border-radius: 9px; padding: 10px; }
+    .chat-call-rank.podium b { width: 27px; height: 27px; font-size: 11px; box-shadow: 0 0 14px rgba(255, 215, 92, .28); }
+    .chat-call-rank.podium span { font-weight: 800; }
+    .chat-call-rank.place-1 { order: -3; border-color: rgba(255, 215, 96, .6); background: linear-gradient(90deg, rgba(196, 137, 18, .25), transparent); }
+    .chat-call-rank.place-1 b { color: #3b2500; background: linear-gradient(135deg, #fff0a4, #d79918); }
+    .chat-call-rank.place-1 small { color: #ffe28b; }
+    .chat-call-rank.place-2 { order: -2; border-color: rgba(208, 218, 226, .45); background: linear-gradient(90deg, rgba(153, 170, 181, .2), transparent); }
+    .chat-call-rank.place-2 b { color: #273039; background: linear-gradient(135deg, #f3f6f8, #9daab5); }
+    .chat-call-rank.place-2 small { color: #d9e2e8; }
+    .chat-call-rank.place-3 { order: -1; border-color: rgba(214, 142, 82, .5); background: linear-gradient(90deg, rgba(161, 82, 35, .2), transparent); }
+    .chat-call-rank.place-3 b { color: #3d1d0a; background: linear-gradient(135deg, #f1bd8a, #ad5e2d); }
+    .chat-call-rank.place-3 small { color: #e9b07c; }
+    .chat-call-rank:not(.podium) { opacity: .72; }
     .chat-call-no-ranking { margin: 5px 0 0; color: #938b7d; font-size: 11px; }
     @media (max-width: 900px) { .chat-call-layout { grid-template-columns: 1fr; } .chat-call-side { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 560px) { .chat-call-side { grid-template-columns: 1fr; } .chat-call-item { grid-template-columns: auto minmax(0, 1fr); } .chat-call-actions { grid-column: 1 / -1; } .chat-call-action { flex: 1; } }

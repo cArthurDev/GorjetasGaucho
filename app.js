@@ -945,7 +945,7 @@ function renderChatCalls() {
     : Object.entries(ranking).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const rankingElement = $('#chat-call-ranking');
   if (rankingElement) rankingElement.innerHTML = leaders.length
-    ? leaders.map(([name, total], index) => `<div class="chat-call-rank"><b>${index + 1}</b><span>${escapeHtml(name)}</span><small>R$ ${Number(total).toFixed(2).replace('.', ',')}</small></div>`).join('')
+    ? leaders.map(([name, total], index) => `<div class="chat-call-rank ${index < 3 ? `podium place-${index + 1}` : 'other-place'}"><b>${index + 1}</b><span>${escapeHtml(name)}</span><small>R$ ${Number(total).toFixed(2).replace('.', ',')}</small></div>`).join('')
     : '<p class="chat-call-no-ranking">Sem chamadas concluídas nesta semana.</p>';
 }
 
