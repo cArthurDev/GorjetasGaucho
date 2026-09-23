@@ -14,6 +14,15 @@ alter table public.chat_calls add column if not exists completed_at timestamptz;
 create index if not exists chat_calls_created_at_idx on public.chat_calls (created_at asc);
 create index if not exists chat_calls_completed_at_idx on public.chat_calls (completed_at desc) where completed_at is not null;
 
+-- Permite que o painel receba em tempo real novas calls, conclusoes e exclusoes.
+-- O bloco pode ser executado mais de uma vez sem erro.
+do $$
+begin
+  alter publication supabase_realtime add table public.chat_calls;
+exception
+  when duplicate_object then null;
+end;
+
 -- A API atual usa a chave pública do projeto; permita a leitura e a criação
 -- de calls. Não há UPDATE ou DELETE liberados.
 alter table public.chat_calls enable row level security;

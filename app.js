@@ -874,6 +874,26 @@ async function showDashboard() {
 
 const CHAT_CALL_STORAGE_KEY = 'gaucho_chat_calls';
 const CHAT_CALL_HISTORY_STORAGE_KEY = 'gaucho_chat_call_history';
+let chatCallsRealtimeChannel;
+let chatCallsSyncTimer;
+
+function scheduleChatCallsSync() {
+  clearTimeout(chatCallsSyncTimer);
+  chatCallsSyncTimer = setTimeout(loadChatCalls, 150);
+}
+
+function subscribeToChatCalls() {
+  if (chatCallsRealtimeChannel || !CALLS_API_URL) return;
+
+  chatCallsRealtimeChannel = supabase
+    .channel('chat-calls-realtime')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'chat_calls' },
+      scheduleChatCallsSync
+    )
+    .subscribe();
+}
 
 function loadChatCalls() {
   try {
@@ -899,11 +919,14 @@ function loadChatCalls() {
         game: call.call
       }));
       state.chatCallRanking = Array.isArray(data.ranking) ? data.ranking : [];
+      saveChatCalls();
       renderChatCalls();
     })
     .catch(() => {
       // A tela continua operando com as chamadas salvas localmente se a API estiver indisponível.
     });
+
+  subscribeToChatCalls();
 }
 
 function saveChatCalls() {
