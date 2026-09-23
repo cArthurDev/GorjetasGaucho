@@ -35,6 +35,10 @@ const isAdmin =
 const state = {
   members: [],
   tips: [],
+  slotsBattle: [],
+  slotsBattleSize: 16,
+  slotsBattleGenerated: false,
+  slotsBattleWinners: {},
   filter: '',
   loading: false,
   tipLoading: false
@@ -78,6 +82,41 @@ const initials = (name = '') =>
     .map((part) => part[0])
     .join('')
     .toUpperCase();
+
+
+const AVATAR_COUNT = 10;
+
+
+const avatarHash = (value = '') =>
+  Array.from(String(value)).reduce(
+    (total, character) =>
+      ((total * 31) + character.charCodeAt(0)) >>> 0,
+    0
+  );
+
+
+const memberAvatarUrl = (memberId = '') => {
+
+  const memberIds = state.members
+    .map((member) => String(member.id))
+    .sort(
+      (first, second) =>
+        avatarHash(first) - avatarHash(second) ||
+        first.localeCompare(second)
+    );
+
+  const memberPosition = memberIds.indexOf(String(memberId));
+
+  const avatarNumber = String(
+    (memberPosition >= 0 ? memberPosition : avatarHash(memberId)) %
+      AVATAR_COUNT + 1
+  );
+
+  const paddedAvatarNumber = avatarNumber.padStart(2, '0');
+
+  return `../images/avatar/avatar-${paddedAvatarNumber}.png`;
+
+};
 
 
 const feedback = (
@@ -767,6 +806,8 @@ async function showDashboard() {
   dashboardInitialized =
     true;
 
+  loadSlotsBattleEntries();
+
 
   document
     .querySelectorAll('.nav-item')
@@ -804,6 +845,15 @@ async function showDashboard() {
       'click',
       spinRoulette
     );
+
+  $('#slots-draw')?.addEventListener('click', drawSlotsMember);
+  $('#slots-add')?.addEventListener('click', addSlotsBattleEntry);
+  $('#slots-generate')?.addEventListener('click', generateSlotsBracket);
+  $('#slots-clear')?.addEventListener('click', clearSlotsBattle);
+  $('#slots-size')?.addEventListener('change', changeSlotsBattleSize);
+  $('#slots-name')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') addSlotsBattleEntry();
+  });
 
 
   await loadData();
@@ -1022,6 +1072,8 @@ function renderAll() {
 
   renderTips();
 
+  renderSlotsBattle();
+
 
   if (
     $('#nav-member-count')
@@ -1044,6 +1096,268 @@ function renderAll() {
 
   }
 
+  if ($('#nav-slots-count')) {
+    $('#nav-slots-count').textContent = state.slotsBattle.length;
+  }
+
+}
+
+
+/* =========================================================
+   BATALHA DE SLOTS
+========================================================= */
+
+const SLOTS_BATTLE_STORAGE_KEY = 'gaucho_slots_battle_entries';
+const SLOTS_BATTLE_SETTINGS_KEY = 'gaucho_slots_battle_settings';
+
+function loadSlotsBattleEntries() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SLOTS_BATTLE_STORAGE_KEY) || '[]');
+    state.slotsBattle = Array.isArray(saved) ? saved : [];
+    const settings = JSON.parse(localStorage.getItem(SLOTS_BATTLE_SETTINGS_KEY) || '{}');
+    state.slotsBattleSize = [2, 4, 8, 16].includes(Number(settings.size)) ? Number(settings.size) : 16;
+    state.slotsBattleGenerated = Boolean(settings.generated);
+    state.slotsBattleWinners = settings.winners && typeof settings.winners === 'object' ? settings.winners : {};
+  } catch {
+    state.slotsBattle = [];
+    state.slotsBattleSize = 16;
+    state.slotsBattleGenerated = false;
+    state.slotsBattleWinners = {};
+  }
+}
+
+function saveSlotsBattleEntries() {
+  localStorage.setItem(SLOTS_BATTLE_STORAGE_KEY, JSON.stringify(state.slotsBattle));
+  localStorage.setItem(SLOTS_BATTLE_SETTINGS_KEY, JSON.stringify({
+    size: state.slotsBattleSize,
+    generated: state.slotsBattleGenerated,
+    winners: state.slotsBattleWinners
+  }));
+}
+
+function slotsBattleMessage(message = '') {
+  const status = $('#slots-status');
+  if (status) status.textContent = message;
+}
+
+function renderSlotsBattle() {
+  const memberSelect = $('#slots-member');
+  const bracket = $('#slots-bracket');
+  const entrants = $('#slots-entrants');
+  const addButton = $('#slots-add');
+  const drawButton = $('#slots-draw');
+  if (!memberSelect || !bracket || !entrants) return;
+
+  const sizeSelect = $('#slots-size');
+  if (sizeSelect) sizeSelect.value = String(state.slotsBattleSize);
+
+  const selectedId = memberSelect.value;
+  const usedIds = new Set(state.slotsBattle.map((entry) => String(entry.memberId)));
+  const availableMembers = state.members.filter((member) => !usedIds.has(String(member.id)));
+  const isFull = state.slotsBattle.length >= state.slotsBattleSize;
+
+  if (addButton) {
+    addButton.disabled = isFull;
+    addButton.textContent = isFull ? 'Vagas preenchidas' : 'Adicionar à copa';
+  }
+
+  if (drawButton) drawButton.disabled = isFull || !availableMembers.length;
+  memberSelect.innerHTML = availableMembers.length
+    ? `<option value="">Selecione um membro</option>${availableMembers.map((member) => `<option value="${escapeHtml(member.id)}">${escapeHtml(member.full_name)}${member.twitch_nick ? ` (@${escapeHtml(member.twitch_nick)})` : ''}</option>`).join('')}`
+    : '<option value="">Nenhum membro disponível</option>';
+  if (availableMembers.some((member) => String(member.id) === selectedId)) memberSelect.value = selectedId;
+
+  entrants.innerHTML = state.slotsBattle.length
+    ? state.slotsBattle.map((entry, index) => `<div class="slots-entry"><div><p>${escapeHtml(entry.memberName)}</p><span>Slot: ${escapeHtml(entry.slotName)}</span></div><button class="slots-remove" type="button" data-slots-remove="${index}">Remover</button></div>`).join('')
+    : '<div class="empty-state">Adicione membros e os respectivos slots para montar a chave.</div>';
+  entrants.querySelectorAll('[data-slots-remove]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.slotsBattle.splice(Number(button.dataset.slotsRemove), 1);
+      state.slotsBattleGenerated = false;
+      state.slotsBattleWinners = {};
+      saveSlotsBattleEntries();
+      slotsBattleMessage('Participante removido da copa.');
+      renderAll();
+    });
+  });
+
+  if (isFull && !state.slotsBattleGenerated) {
+    slotsBattleMessage(`Todas as ${state.slotsBattleSize} vagas foram preenchidas. Clique em “Gerar chaveamento”.`);
+  }
+
+  if (!state.slotsBattleGenerated) {
+    bracket.innerHTML = `<div class="empty-state">Cadastre ${state.slotsBattleSize} participante(s) e clique em “Gerar chaveamento”. (${state.slotsBattle.length}/${state.slotsBattleSize})</div>`;
+    return;
+  }
+
+  const roundTitles = {
+    2: ['Final'],
+    4: ['Semifinal', 'Final'],
+    8: ['Quartas de final', 'Semifinal', 'Final'],
+    16: ['Oitavas de final', 'Quartas de final', 'Semifinal', 'Final']
+  };
+  let roundEntries = state.slotsBattle;
+  const columns = roundTitles[state.slotsBattleSize].map((title, roundIndex) => {
+    const matches = state.slotsBattleSize / (2 ** (roundIndex + 1));
+    const entriesForRound = roundEntries;
+    let nextEntries = [];
+    const matchesHtml = Array.from({ length: matches }, (_, matchIndex) => {
+      const first = entriesForRound[matchIndex * 2];
+      const second = entriesForRound[(matchIndex * 2) + 1];
+      const winnerId = state.slotsBattleWinners[`${roundIndex}-${matchIndex}`];
+      const winner = [first, second].find((entry) => String(entry?.memberId) === String(winnerId));
+      nextEntries.push(winner);
+      const contender = (entry, seed) => entry
+        ? `<button class="slots-contender ${String(entry.memberId) === String(winnerId) ? 'selected' : ''}" type="button" data-slots-winner="${roundIndex}-${matchIndex}" data-member-id="${escapeHtml(entry.memberId)}"><span class="slots-seed">${seed}</span><div><strong>${escapeHtml(entry.memberName)}</strong><small>${escapeHtml(entry.slotName)}</small></div></button>`
+        : '<div class="slots-contender empty">A definir</div>';
+      return `<div class="slots-match">${contender(first, (matchIndex * 2) + 1)}${contender(second, (matchIndex * 2) + 2)}</div>`;
+    }).join('');
+    roundEntries = nextEntries;
+    return `<div class="slots-round"><h3>${title}</h3>${matchesHtml}</div>`;
+  });
+  bracket.innerHTML = columns.join('');
+
+  bracket.querySelectorAll('[data-slots-winner]').forEach((button) => {
+    button.addEventListener('click', () => chooseSlotsWinner(button.dataset.slotsWinner, button.dataset.memberId));
+  });
+}
+
+function changeSlotsBattleSize(event) {
+  const size = Number(event.target.value);
+  if (state.slotsBattle.length > size) {
+    slotsBattleMessage(`Já existem ${state.slotsBattle.length} participantes. Remova alguns antes de reduzir as vagas.`);
+    event.target.value = String(state.slotsBattleSize);
+    return;
+  }
+  state.slotsBattleSize = size;
+  state.slotsBattleGenerated = false;
+  state.slotsBattleWinners = {};
+  saveSlotsBattleEntries();
+  slotsBattleMessage(`Copa configurada para ${size} participantes.`);
+  renderAll();
+}
+
+function generateSlotsBracket() {
+  if (state.slotsBattle.length !== state.slotsBattleSize) {
+    slotsBattleMessage(`Cadastre exatamente ${state.slotsBattleSize} participantes para gerar o chaveamento. (${state.slotsBattle.length}/${state.slotsBattleSize})`);
+    return;
+  }
+  for (let index = state.slotsBattle.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [state.slotsBattle[index], state.slotsBattle[randomIndex]] = [state.slotsBattle[randomIndex], state.slotsBattle[index]];
+  }
+  state.slotsBattleGenerated = true;
+  state.slotsBattleWinners = {};
+  saveSlotsBattleEntries();
+  slotsBattleMessage('Chaveamento gerado com os participantes sorteados.');
+  renderAll();
+}
+
+function clearSlotsBattle() {
+  if (!state.slotsBattle.length) {
+    slotsBattleMessage('Não há participantes para remover.');
+    return;
+  }
+
+  if (!window.confirm(`Remover todos os ${state.slotsBattle.length} participantes e reiniciar a Batalha de Slots?`)) return;
+
+  state.slotsBattle = [];
+  state.slotsBattleGenerated = false;
+  state.slotsBattleWinners = {};
+  saveSlotsBattleEntries();
+  slotsBattleMessage('Batalha de Slots reiniciada.');
+  renderAll();
+}
+
+async function chooseSlotsWinner(matchKey, memberId) {
+  const roundIndex = Number(matchKey.split('-')[0]);
+  const isFinal = roundIndex === Math.log2(state.slotsBattleSize) - 1;
+  state.slotsBattleWinners[matchKey] = memberId;
+  Object.keys(state.slotsBattleWinners).forEach((key) => {
+    if (Number(key.split('-')[0]) > roundIndex) delete state.slotsBattleWinners[key];
+  });
+  saveSlotsBattleEntries();
+  slotsBattleMessage(isFinal ? 'Campeão definido!' : 'Vencedor definido e avançado para a próxima fase.');
+  renderAll();
+  if (isFinal) {
+    const champion = state.slotsBattle.find((entry) => String(entry.memberId) === String(memberId));
+    if (champion) {
+      const registered = await registerTip(champion.memberId, 'members', false, 20);
+      slotsBattleMessage(
+        registered
+          ? 'Campeão definido e gorjeta de R$ 20,00 registrada!'
+          : 'Campeão definido, mas não foi possível registrar a gorjeta.'
+      );
+      showSlotsChampionCelebration(champion);
+    }
+  }
+}
+
+function showSlotsChampionCelebration(champion) {
+  document.querySelector('.slots-champion-overlay')?.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'slots-champion-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.innerHTML = `<div class="slots-champion-card"><div class="slots-champion-trophy">🏆</div><h2>CAMPEÃO!</h2><p>${escapeHtml(champion.memberName)}</p><small>Venceu com o slot ${escapeHtml(champion.slotName)}</small><button class="slots-champion-close" type="button">Celebrar!</button></div>`;
+  const colors = ['#ffda54', '#f07167', '#65c7d0', '#d889e8', '#fff'];
+  for (let index = 0; index < 70; index++) {
+    const confetti = document.createElement('span');
+    confetti.className = 'slots-confetti';
+    confetti.style.left = `${Math.random() * 100}%`;
+    confetti.style.setProperty('--confetti-x', `${-220 + Math.random() * 440}px`);
+    confetti.style.setProperty('--confetti-color', colors[index % colors.length]);
+    confetti.style.animationDelay = `${Math.random() * .55}s`;
+    overlay.appendChild(confetti);
+  }
+  const close = () => overlay.remove();
+  overlay.querySelector('.slots-champion-close')?.addEventListener('click', close);
+  overlay.addEventListener('click', (event) => { if (event.target === overlay) close(); });
+  document.body.appendChild(overlay);
+}
+
+function drawSlotsMember() {
+  const select = $('#slots-member');
+  const usedIds = new Set(state.slotsBattle.map((entry) => String(entry.memberId)));
+  const candidates = state.members.filter((member) => !usedIds.has(String(member.id)));
+  if (!candidates.length) {
+    slotsBattleMessage('Não há membros disponíveis para sortear.');
+    return;
+  }
+  const winner = candidates[Math.floor(Math.random() * candidates.length)];
+  select.value = String(winner.id);
+  slotsBattleMessage(`${winner.full_name} foi sorteado. Agora informe o nome do slot e adicione à copa.`);
+}
+
+function addSlotsBattleEntry() {
+  const select = $('#slots-member');
+  const slotInput = $('#slots-name');
+  const member = state.members.find((item) => String(item.id) === String(select?.value));
+  const slotName = slotInput?.value.trim();
+  if (!member) {
+    slotsBattleMessage('Selecione ou sorteie um membro cadastrado.');
+    return;
+  }
+  if (!slotName) {
+    slotsBattleMessage('Informe o nome do slot.');
+    slotInput?.focus();
+    return;
+  }
+  if (state.slotsBattle.some((entry) => String(entry.memberId) === String(member.id))) {
+    slotsBattleMessage('Este membro já está na batalha.');
+    return;
+  }
+  if (state.slotsBattle.length >= state.slotsBattleSize) {
+    slotsBattleMessage(`A chave está completa: o limite é de ${state.slotsBattleSize} participantes.`);
+    return;
+  }
+  state.slotsBattle.push({ memberId: member.id, memberName: member.full_name, slotName });
+  state.slotsBattleGenerated = false;
+  state.slotsBattleWinners = {};
+  saveSlotsBattleEntries();
+  slotInput.value = '';
+  slotsBattleMessage(`${member.full_name} entrou na Batalha de Slots.`);
+  renderAll();
 }
 
 
@@ -1082,7 +1396,9 @@ function renderMembers() {
 
                 <div class="member-top">
 
-                  <div>
+                  <div class="member-identity">
+
+                    <span class="member-status">Membro da comunidade</span>
 
                     <h3 class="member-name">
                       ${escapeHtml(
@@ -1101,11 +1417,21 @@ function renderMembers() {
 
                   <div class="member-avatar">
 
+                    <img
+                      class="member-avatar-image"
+                      src="${memberAvatarUrl(member.id)}"
+                      alt=""
+                    />
+
+                    <span class="member-avatar-initials">
+
                     ${escapeHtml(
                       initials(
                         member.full_name
                       )
                     )}
+
+                    </span>
 
                   </div>
 
@@ -1114,7 +1440,11 @@ function renderMembers() {
 
                 <div class="member-meta">
 
-                  <div class="phone-protected">
+                  <div class="member-contact">
+
+                    <span class="member-detail-label">Contato</span>
+
+                    <div class="phone-protected">
 
                     <span
                       class="member-phone"
@@ -1141,11 +1471,21 @@ function renderMembers() {
                       👁
                     </button>
 
+                    </div>
+
+                    <label class="member-tip-value">
+                      <span>Valor da gorjeta</span>
+                      <input class="member-tip-amount" data-tip-amount="${escapeHtml(member.id)}" type="number" min="0.01" step="0.01" value="20.00" inputmode="decimal" aria-label="Valor da gorjeta" />
+                    </label>
+
                   </div>
 
 
                   <div class="member-tip-actions">
-                    <input class="member-tip-amount" data-tip-amount="${escapeHtml(member.id)}" type="number" min="0.01" step="0.01" value="20.00" inputmode="decimal" aria-label="Valor da gorjeta" />
+
+                    <span class="member-detail-label">Nova gorjeta</span>
+
+                    <div class="member-tip-controls">
                   <button
                     type="button"
                     class="card-tip"
@@ -1155,6 +1495,8 @@ function renderMembers() {
                   >
                     Dar gorjeta ✦
                   </button>
+                  </div>
+
                   </div>
 
                 </div>
@@ -1172,6 +1514,26 @@ function renderMembers() {
         </div>
 
       `;
+
+
+  grid
+    .querySelectorAll('.member-avatar-image')
+    .forEach(
+      (image) => {
+
+        image.addEventListener(
+          'error',
+          () => {
+
+            image.parentElement?.classList.add('avatar-fallback');
+            image.remove();
+
+          },
+          { once: true }
+        );
+
+      }
+    );
 
 
   /* =========================================
@@ -1871,6 +2233,10 @@ function switchTab(
 
   }
 
+  if (tab === 'slots') {
+    title = 'Batalha de Slots';
+  }
+
   if (
     tab === 'cash'
   ) {
@@ -1896,6 +2262,15 @@ function switchTab(
 
     title =
       'Gorjetas';
+
+  }
+
+  if (
+    tab === 'race'
+  ) {
+
+    title =
+      'Corrida Gaúcha';
 
   }
 
