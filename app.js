@@ -693,6 +693,12 @@ function initMembers() {
 
 function initAdmin() {
 
+  // Mantém a navegação disponível mesmo se alguma área do painel falhar ao carregar.
+  document.querySelector('.side-nav')?.addEventListener('click', (event) => {
+    const item = event.target.closest('.nav-item[data-tab]');
+    if (item) switchTab(item.dataset.tab);
+  });
+
   if (
     sessionStorage.getItem(
       'gaucho_admin'
@@ -882,6 +888,10 @@ let chatCallsSyncTimer;
 
 const isFeaturedChatCallUser = (name) =>
   FEATURED_CHAT_CALL_USERS.has(String(name || '').trim().toLowerCase());
+
+const isFeaturedMember = (member) =>
+  isFeaturedChatCallUser(member?.full_name) ||
+  isFeaturedChatCallUser(member?.twitch_nick);
 
 function scheduleChatCallsSync() {
   clearTimeout(chatCallsSyncTimer);
@@ -1639,7 +1649,7 @@ function renderMembers() {
           .map(
             (member) => `
 
-              <article class="member-card">
+              <article class="member-card${isFeaturedMember(member) ? ' featured-member' : ''}">
 
                 <div class="member-top">
 
