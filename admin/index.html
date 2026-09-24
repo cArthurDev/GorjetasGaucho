@@ -883,13 +883,16 @@
     .slots-round h3 { margin: 0 0 3px; color: #d9ad4c; font-size: 11px; letter-spacing: 1.3px; text-align: center; text-transform: uppercase; }
     .slots-match { position: relative; overflow: hidden; border: 1px solid #3b362b; border-radius: 9px; background: #1b1a17; }
     .slots-match::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #dcae49, transparent); }
-    .slots-contender { display: flex; width: 100%; align-items: center; gap: 9px; min-height: 48px; padding: 8px 10px; border: 0; border-bottom: 1px solid #312e27; color: inherit; background: transparent; text-align: left; }
-    button.slots-contender { cursor: pointer; }
-    button.slots-contender:hover { background: rgba(220, 174, 73, .1); }
-    button.slots-contender.selected { background: rgba(220, 174, 73, .2); }
-    button.slots-contender.selected::after { content: '✓'; margin-left: auto; color: #f0c54d; font-size: 17px; font-weight: 800; }
+    .slots-contender { border-bottom: 1px solid #312e27; color: inherit; background: transparent; }
+    .slots-contender-select { display: flex; width: 100%; align-items: center; gap: 9px; min-height: 48px; padding: 8px 10px 5px; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
+    .slots-contender-select:hover { background: rgba(220, 174, 73, .1); }
+    .slots-contender.selected { background: rgba(220, 174, 73, .2); }
+    .slots-contender.selected .slots-contender-select::after { content: '✓'; margin-left: auto; color: #f0c54d; font-size: 17px; font-weight: 800; }
     .slots-contender:last-child { border-bottom: 0; }
     .slots-contender.empty { color: #6f6b60; font-style: italic; }
+    .slots-bonus-payment { display: flex; align-items: center; gap: 7px; padding: 0 10px 8px 43px; color: #aca494; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .slots-bonus-payment input { width: 82px; min-width: 0; height: 27px; border: 1px solid #4a4334; border-radius: 5px; padding: 0 7px; color: #f5f0e3; background: #11110f; font: inherit; text-transform: none; }
+    .slots-bonus-payment input:focus { outline: none; border-color: #dbae45; }
     .slots-seed { display: grid; flex: 0 0 24px; width: 24px; height: 24px; place-items: center; border-radius: 50%; color: #211807; background: #dbae45; font-size: 10px; font-weight: 800; }
     .slots-contender strong { display: block; overflow: hidden; color: #f5f0e5; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
     .slots-contender small { display: block; overflow: hidden; max-width: 160px; color: #aca494; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }

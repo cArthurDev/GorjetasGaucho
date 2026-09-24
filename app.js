@@ -40,6 +40,7 @@ const state = {
   slotsBattleSize: 16,
   slotsBattleGenerated: false,
   slotsBattleWinners: {},
+  slotsBattleBonusPayments: {},
   chatCalls: [],
   chatCallHistory: [],
   chatCallRanking: null,
@@ -1379,11 +1380,13 @@ function loadSlotsBattleEntries() {
     state.slotsBattleSize = [2, 4, 8, 16].includes(Number(settings.size)) ? Number(settings.size) : 16;
     state.slotsBattleGenerated = Boolean(settings.generated);
     state.slotsBattleWinners = settings.winners && typeof settings.winners === 'object' ? settings.winners : {};
+    state.slotsBattleBonusPayments = settings.bonusPayments && typeof settings.bonusPayments === 'object' ? settings.bonusPayments : {};
   } catch {
     state.slotsBattle = [];
     state.slotsBattleSize = 16;
     state.slotsBattleGenerated = false;
     state.slotsBattleWinners = {};
+    state.slotsBattleBonusPayments = {};
   }
 }
 
@@ -1392,7 +1395,8 @@ function saveSlotsBattleEntries() {
   localStorage.setItem(SLOTS_BATTLE_SETTINGS_KEY, JSON.stringify({
     size: state.slotsBattleSize,
     generated: state.slotsBattleGenerated,
-    winners: state.slotsBattleWinners
+    winners: state.slotsBattleWinners,
+    bonusPayments: state.slotsBattleBonusPayments
   }));
 }
 
@@ -1429,13 +1433,14 @@ function renderSlotsBattle() {
   if (availableMembers.some((member) => String(member.id) === selectedId)) memberSelect.value = selectedId;
 
   entrants.innerHTML = state.slotsBattle.length
-    ? state.slotsBattle.map((entry, index) => `<div class="slots-entry"><div><p>${escapeHtml(entry.memberName)}</p><span>Slot: ${escapeHtml(entry.slotName)}</span></div><button class="slots-remove" type="button" data-slots-remove="${index}">Remover</button></div>`).join('')
+    ? state.slotsBattle.map((entry, index) => `<div class="slots-entry"><div><p>${escapeHtml(entry.memberName)}</p><span>Slot: ${escapeHtml(entry.slotName)}</span></div><button class="slots-remove" type="button" data-slots-remove="${index}" data-slots-member-id="${escapeHtml(entry.memberId)}">Remover</button></div>`).join('')
     : '<div class="empty-state">Adicione membros e os respectivos slots para montar a chave.</div>';
   entrants.querySelectorAll('[data-slots-remove]').forEach((button) => {
     button.addEventListener('click', () => {
       state.slotsBattle.splice(Number(button.dataset.slotsRemove), 1);
       state.slotsBattleGenerated = false;
       state.slotsBattleWinners = {};
+      delete state.slotsBattleBonusPayments[button.dataset.slotsMemberId];
       saveSlotsBattleEntries();
       slotsBattleMessage('Participante removido da copa.');
       renderAll();
@@ -1469,7 +1474,7 @@ function renderSlotsBattle() {
       const winner = [first, second].find((entry) => String(entry?.memberId) === String(winnerId));
       nextEntries.push(winner);
       const contender = (entry, seed) => entry
-        ? `<button class="slots-contender ${String(entry.memberId) === String(winnerId) ? 'selected' : ''}" type="button" data-slots-winner="${roundIndex}-${matchIndex}" data-member-id="${escapeHtml(entry.memberId)}"><span class="slots-seed">${seed}</span><div><strong>${escapeHtml(entry.memberName)}</strong><small>${escapeHtml(entry.slotName)}</small></div></button>`
+        ? `<div class="slots-contender ${String(entry.memberId) === String(winnerId) ? 'selected' : ''}"><button class="slots-contender-select" type="button" data-slots-winner="${roundIndex}-${matchIndex}" data-member-id="${escapeHtml(entry.memberId)}"><span class="slots-seed">${seed}</span><div><strong>${escapeHtml(entry.memberName)}</strong><small>${escapeHtml(entry.slotName)}</small></div></button><label class="slots-bonus-payment"><span>Bônus pagou</span><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="R$ 0,00" value="${escapeHtml(state.slotsBattleBonusPayments[String(entry.memberId)] || '')}" data-slots-bonus-member-id="${escapeHtml(entry.memberId)}" aria-label="Bônus pago por ${escapeHtml(entry.memberName)}"></label></div>`
         : '<div class="slots-contender empty">A definir</div>';
       return `<div class="slots-match">${contender(first, (matchIndex * 2) + 1)}${contender(second, (matchIndex * 2) + 2)}</div>`;
     }).join('');
@@ -1480,6 +1485,15 @@ function renderSlotsBattle() {
 
   bracket.querySelectorAll('[data-slots-winner]').forEach((button) => {
     button.addEventListener('click', () => chooseSlotsWinner(button.dataset.slotsWinner, button.dataset.memberId));
+  });
+  bracket.querySelectorAll('[data-slots-bonus-member-id]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const memberId = input.dataset.slotsBonusMemberId;
+      const payment = input.value.trim();
+      if (payment) state.slotsBattleBonusPayments[memberId] = payment;
+      else delete state.slotsBattleBonusPayments[memberId];
+      saveSlotsBattleEntries();
+    });
   });
 }
 
@@ -1525,6 +1539,7 @@ function clearSlotsBattle() {
   state.slotsBattle = [];
   state.slotsBattleGenerated = false;
   state.slotsBattleWinners = {};
+  state.slotsBattleBonusPayments = {};
   saveSlotsBattleEntries();
   slotsBattleMessage('Batalha de Slots reiniciada.');
   renderAll();
