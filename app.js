@@ -884,6 +884,7 @@ const CHAT_CALL_STORAGE_KEY = 'gaucho_chat_calls';
 const CHAT_CALL_HISTORY_STORAGE_KEY = 'gaucho_chat_call_history';
 const FEATURED_CHAT_CALL_USERS = new Set(['arthur souza', 'carthurdevv']);
 const RED_FEATURED_MEMBER_USERS = new Set(['lucaskekznsi', 'lucaskekzi']);
+const GOLD_SILVER_FEATURED_MEMBER_USERS = new Set(['98samuel1998']);
 let chatCallsRealtimeChannel;
 let chatCallsSyncTimer;
 
@@ -896,6 +897,9 @@ const isFeaturedMember = (member) =>
 
 const isRedFeaturedMember = (member) =>
   RED_FEATURED_MEMBER_USERS.has(String(member?.twitch_nick || '').trim().toLowerCase());
+
+const isGoldSilverFeaturedMember = (member) =>
+  GOLD_SILVER_FEATURED_MEMBER_USERS.has(String(member?.twitch_nick || '').trim().toLowerCase());
 
 function scheduleChatCallsSync() {
   clearTimeout(chatCallsSyncTimer);
@@ -1653,7 +1657,7 @@ function renderMembers() {
           .map(
             (member) => `
 
-              <article class="member-card${isFeaturedMember(member) ? ' featured-member' : ''}${isRedFeaturedMember(member) ? ' featured-member-red' : ''}">
+              <article class="member-card${isFeaturedMember(member) ? ' featured-member' : ''}${isRedFeaturedMember(member) ? ' featured-member-red' : ''}${isGoldSilverFeaturedMember(member) ? ' featured-member-gold-silver' : ''}">
 
                 <div class="member-top">
 
