@@ -3937,28 +3937,35 @@ async function spinRoulette() {
 
       const finalRotation = (360 * 7) + landingAngle;
 
-      wheel.getAnimations().forEach(
+      (wheel.getAnimations?.() || []).forEach(
         (animation) => animation.cancel()
       );
       wheel.classList.remove('spinning');
+      wheel.style.transition = 'none';
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
-      const animation = wheel.animate(
-        [
-          { transform: 'rotate(0deg)' },
-          { transform: `rotate(${finalRotation}deg)` }
-        ],
-        {
-          duration: 4100,
-          easing: 'cubic-bezier(.12, .75, .1, 1)',
-          fill: 'forwards'
-        }
-      );
+      if (typeof wheel.animate === 'function') {
+        const animation = wheel.animate(
+          [
+            { transform: 'rotate(0deg)' },
+            { transform: `rotate(${finalRotation}deg)` }
+          ],
+          {
+            duration: 4100,
+            easing: 'cubic-bezier(.12, .75, .1, 1)',
+            fill: 'forwards'
+          }
+        );
 
-      spinFinished = animation.finished.catch(
-        () => undefined
-      );
+        spinFinished = animation.finished.catch(
+          () => undefined
+        );
+      } else {
+        wheel.style.transition = 'transform 4.1s cubic-bezier(.12, .75, .1, 1)';
+        wheel.style.transform = `rotate(${finalRotation}deg)`;
+        spinFinished = sleep(4100);
+      }
 
     }
 
@@ -3996,6 +4003,11 @@ async function spinRoulette() {
 
     }
 
+
+  } catch (error) {
+
+    console.error('Erro ao girar a roleta:', error);
+    showDashboardMessage('Não foi possível girar a roleta. Atualize a página e tente novamente.');
 
   } finally {
 
